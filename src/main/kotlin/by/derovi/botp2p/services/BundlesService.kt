@@ -44,7 +44,7 @@ class BundlesService {
         }
     }
 
-    @Scheduled(initialDelay = 1000, fixedRate = 3 * 60 * 1000) // Repeat every 3 minutes
+    @Scheduled(initialDelay = 1000, fixedRate = 1 * 60 * 1000 + 15 * 1000) // Repeat every 1 minutes
     fun scheduleTaskUsingCronExpression() {
         thread {
             PaymentMethod.values().toList() // Список банков. Указаны все, можно указать конкретные вот так:
