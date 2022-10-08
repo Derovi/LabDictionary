@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  db:
+    image: "postgres:13.1-alpine"
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=botp2p
+      - POSTGRES_PASSWORD=abacaba
+      - POSTGRES_DB=botp2p
+#    env_file:
+#      - database.env
+
+  bot:
+    build:
+      context: .
+    container_name: bot
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/botp2p
+      - SPRING_DATASOURCE_USERNAME=botp2p
+      - SPRING_DATASOURCE_PASSWORD=abacaba
