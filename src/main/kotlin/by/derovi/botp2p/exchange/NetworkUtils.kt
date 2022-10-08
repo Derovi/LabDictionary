@@ -9,28 +9,20 @@ import org.apache.http.client.config.CookieSpecs
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.BasicCredentialsProvider
-import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
+import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.util.ResourceUtils
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
-import java.net.Proxy
-import java.net.URI
 import java.net.URL
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
-import java.util.Deque
-import java.util.LinkedList
-import javax.annotation.PostConstruct
-import javax.swing.text.AbstractDocument.Content
-import kotlin.math.exp
+import java.util.*
+
 
 //fun main() {
 //    val response = NetworkUtils.postRequest(
@@ -52,7 +44,8 @@ object NetworkUtils {
     }
 
     init {
-        ResourceUtils.getFile("classpath:proxies").forEachLine {
+        val resourceLoader: ResourceLoader = DefaultResourceLoader()
+        resourceLoader.getResource("classpath:proxies").inputStream.bufferedReader().forEachLine {
             val raw = it.split(":")
             val host = raw[0]
             val port = raw[1].toInt()
