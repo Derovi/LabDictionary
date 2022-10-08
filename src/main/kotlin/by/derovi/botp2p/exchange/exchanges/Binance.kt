@@ -1,6 +1,7 @@
 package by.derovi.botp2p.exchange.exchanges
 
 import by.derovi.botp2p.exchange.*
+import by.derovi.botp2p.exchange.NetworkUtils
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
 
