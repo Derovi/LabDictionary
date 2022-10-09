@@ -1,18 +1,15 @@
 package by.derovi.botp2p
 
 import by.derovi.botp2p.exchange.BundleSearch
-import by.derovi.botp2p.exchange.NetworkUtils
 import by.derovi.botp2p.exchange.exchanges.Binance
 import by.derovi.botp2p.exchange.exchanges.Bybit
 import by.derovi.botp2p.exchange.exchanges.Huobi
-import by.derovi.botp2p.exchange.exchanges.Okex
-import org.springframework.beans.factory.annotation.Autowired
+import by.derovi.botp2p.exchange.exchanges.OKX
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableScheduling
-import javax.annotation.PostConstruct
 
 
 @SpringBootApplication(proxyBeanMethods = true)
@@ -21,7 +18,7 @@ class BotP2pApplication : CommandLineRunner {
 
     @Bean
     fun bundleSearchBean() = BundleSearch(
-        arrayOf(Huobi, Binance, Okex, Bybit)
+        arrayOf(Huobi, Binance, OKX, Bybit)
     )
 
     override fun run(vararg args: String?) {

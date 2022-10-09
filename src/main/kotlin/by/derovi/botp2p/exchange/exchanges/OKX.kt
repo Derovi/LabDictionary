@@ -4,7 +4,7 @@ import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.exchange.NetworkUtils
 import com.fasterxml.jackson.databind.ObjectMapper
 
-object Okex : Exchange {
+object OKX : Exchange {
 
     override fun fetch(
         orderType: OrderType,
@@ -105,6 +105,6 @@ object Okex : Exchange {
     }
 
     override fun name(): String {
-        return "Okex"
+        return "OKX"
     }
 }
