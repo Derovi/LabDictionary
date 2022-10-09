@@ -5,9 +5,9 @@ interface Exchange {
         val tasks = mutableListOf<() -> Map<Setup, List<Offer>>>()
         for (token in supportedTokens()) {
             for (currency in supportedCurrencies()) {
-                tasks.add {
-                    val result = mutableMapOf<Setup, MutableList<Offer>>()
-                    for (paymentMethod in supportedPaymentMethods()) {
+                for (paymentMethod in supportedPaymentMethods()) {
+                    tasks.add {
+                        val result = mutableMapOf<Setup, MutableList<Offer>>()
                         result.getOrPut(
                             Setup(
                                 token,
@@ -33,8 +33,8 @@ interface Exchange {
                             fetch(OrderType.SELL, token, currency, paymentMethod)
                                 .filter { it.completeRate > 0 }.filter { it.maxLimit > 10 },
                         )
+                        return@add result
                     }
-                    return@add result
                 }
             }
         }

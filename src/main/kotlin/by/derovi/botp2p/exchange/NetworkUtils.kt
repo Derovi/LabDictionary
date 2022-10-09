@@ -24,13 +24,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 
-//fun main() {
-//    val response = NetworkUtils.postRequest(
-//        "https://api2.bybit.com/spot/api/otc/item/list",
-//    "userId=&tokenId=USDT&currencyId=RUB&payment=14&side=0&size=10&page=1&amount=",
-//    ContentType.APPLICATION_FORM_URLENCODED)
-//    println(response)
-//}
+//fun main() z
 
 object NetworkUtils {
     var credProvider: CredentialsProvider = BasicCredentialsProvider()
@@ -126,7 +120,9 @@ object NetworkUtils {
 
             val httpPost = HttpPost(url)
             httpPost.entity = StringEntity(payload, contentType)
-            httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded")
+            if (contentType == ContentType.APPLICATION_FORM_URLENCODED) {
+                httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded")
+            }
             val requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(5000)
                 .setConnectTimeout(5000)
