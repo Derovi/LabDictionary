@@ -49,11 +49,10 @@ class ModeDialog : Dialog {
     override fun update(user: BotUser): Boolean {
         val mode = TradingMode.values().find { it.name.equals(user.message, ignoreCase = true) }
         if (mode == null) {
-            user.sendMessage("<b>Режим</b> <i>${user.message}<i> <b>не найлен!</b>")
+            user.sendMessage("<b>Режим</b> <i>${user.message}<i> <b>не найден!</b>")
             commandService.back(user)
         } else {
             user.serviceUser.userSettings.tradingMode = mode
-            user.sendMessage("Установлен режим: <b>${mode.readableName}</b>")
             user.searchBundles()
             commandService.back(user)
         }

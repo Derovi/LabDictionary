@@ -4,6 +4,7 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.exchange.Offer
 import by.derovi.botp2p.exchange.OrderType
 import by.derovi.botp2p.exchange.Token
+import by.derovi.botp2p.library.BundlesPreview
 import by.derovi.botp2p.library.Utils
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
 import by.derovi.botp2p.model.Role
@@ -38,98 +39,77 @@ class BundlesCommand : Command {
         val commandService = context.getBean(CommandService::class.java)
 
         val ttOnly = args.getOrNull(1)?.toBooleanStrictOrNull() ?: false
+        val showFull = args.getOrNull(2)?.toBooleanStrictOrNull() ?: false
         val bundles = if (ttOnly) bundlesService.userToBundleSearchResulTT[user.id] else bundlesService.userToBundleSearchResult[user.id]
 
+        val time = "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>"
+
+        // buttons
+        // end buttons
+
         if (bundles == null || bundles.isEmpty()) {
-            user.sendMessage("<b>Связок нет! Попробуйте позже</b>")
-            commandService.back(user)
+            user.sendMessage(
+                buildString {
+                    append("<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>\n")
+                    append("<b>Связок нет! Попробуйте поиск в режиме Тейкер-Мейкер.</b>")
+                    toString()
+                },
+                with(InlineKeyboardMarkup.builder()) {
+                    keyboardRow(listOf(
+                        InlineKeyboardButton
+                            .builder()
+                            .text("\uD83D\uDD04 Обновить")
+                            .callbackData("/bundles?0&$ttOnly&$showFull").build()
+                    ))
+                    keyboardRow(mutableListOf(buttonsService.modeButton(user.serviceUser.userSettings)))
+                    keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("↩️ Главное меню").callbackData("/start").build()))
+                    build()
+                }
+            )
             return
         }
 
         val bundleIdx = args.firstOrNull()?.toIntOrNull().takeIf { it in bundles.indices } ?: 0
 
-        fun banLink(name: String, exchange: String) = Utils.createCommandLink("[ban]", "/ban?$name&$exchange")
-
         val bundle = bundles[bundleIdx]
-        val worstSpread = bundle.spreadsWithFee.minOf { row -> row.minOf { number -> number } }
         val text = with(StringBuilder()) {
-            val fee = Utils.normalizeSpread(bundle.transferGuide.calculateFinalFee())
             append("<b>${bundleIdx + 1}/${bundles.size}, <i>${bundle.currency}</i></b>, " +
-                    "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>\n")
-            append("Spread: <b>${if (worstSpread < 1e-7) "up to " else "${Utils.normalizeSpread(worstSpread)}%-"}${Utils.normalizeSpread(bundle.bestSpread)}%</b>\n")
-            append("Fee: <b>${fee}%</b>\n")
-            append("\n")
-            append("buy <b>${bundle.buyToken}</b> on <b>${bundle.buyExchange.name()}</b>")
-            if (bundle.buyOffers.first().orderType == OrderType.SELL) {
-                append(" <i>maker</i>")
+                    "$time\n")
+            if (showFull) {
+                append(BundlesPreview.fullView(bundle))
+            } else {
+                append(BundlesPreview.preview(bundle))
             }
-            append("\n")
-            if (bundle.transferGuide.steps.find { it is FeesService.TransferStep.Change } != null) {
-                bundle.transferGuide.steps.forEach {
-                    when (it) {
-                        is FeesService.TransferStep.Change -> append("<i>Change --> ${it.to.readableName}</i>\n")
-                        is FeesService.TransferStep.Transfer -> append("<i>Transfer --> ${it.to.name()}</i>\n")
-                    }
-                }
-            }
-            append("sell <b>${bundle.sellToken}</b> on <b>${bundle.sellExchange.name()}</b>")
-            if (bundle.sellOffers.first().orderType == OrderType.BUY) {
-                append(" <i>maker</i>")
-            }
-            append("\n\n")
-            append("<b><i>Best buy:</i></b>\n")
-
-            fun textForOffer(idx: Int, offer: Offer) =
-                "<b>[${idx + 1}]</b> " +
-                "${Utils.createLink(offer.username, offer.link)} - <b>${offer.paymentMethod}</b>, " +
-                "<b>${offer.token}</b> price: <b>${offer.price} ${bundle.currency}</b>, " +
-                "[limit ${offer.minLimit} - ${offer.maxLimit} ${bundle.currency}], " +
-                "[success ${offer.completeCount}, ${offer.completeRate}%]"
-
-            for ((idx, offer) in bundle.buyOffers.withIndex()) {
-                append(textForOffer(idx, offer))
-                if (offer.orderType == OrderType.SELL) {
-                    append(" <i>maker</i>")
-                }
-                append("  ${banLink(offer.username, offer.exchange!!.name())}")
-                append("\n")
-            }
-            append("\n<b><i>Best sell:</i></b>\n")
-            for ((idx, offer) in bundle.sellOffers.withIndex()) {
-                append(textForOffer(idx, offer))
-                if (offer.orderType == OrderType.BUY) {
-                    append(" <i>maker</i>")
-                }
-                append("  ${banLink(offer.username, offer.exchange!!.name())}")
-                append("\n")
-            }
-
-            append("\n<code>")
-            append(Utils.drawTable(
-                bundle.buyOffers.map { it.username },
-                bundle.sellOffers.map { it.username },
-                bundle.spreadsWithFee.map { it.map { number -> number * 100 } },
-                cutTitles = true
-            ))
-            append("</code>")
             toString()
-        }
-        val columns = mutableListOf<InlineKeyboardButton>()
-        if (bundleIdx > 0) columns.add(
-            InlineKeyboardButton.builder().text("Предыдущая").callbackData("/bundles?${bundleIdx - 1}").build()
-        )
-        columns.add(InlineKeyboardButton.builder().text("Обновить")
-
-            .callbackData(commandService.lastCommand(user)).build())
-        if (bundleIdx + 1 < bundles.size) {
-            columns.add(
-                InlineKeyboardButton.builder().text("Следующая").callbackData("/bundles?${bundleIdx + 1}").build()
-            )
         }
 
         user.sendMessage(
             text,
             with(InlineKeyboardMarkup.builder()) {
+                keyboardRow(listOf(
+                    InlineKeyboardButton
+                        .builder()
+                        .text("\uD83D\uDD04 Обновить")
+                        .callbackData("/bundles?$bundleIdx&$ttOnly&$showFull").build()
+                ))
+
+                val columns = mutableListOf<InlineKeyboardButton>()
+                if (bundleIdx > 0) columns.add(
+                    InlineKeyboardButton.builder().text("⬅️ Предыдущая").callbackData("/bundles?${bundleIdx - 1}&$ttOnly").build()
+                )
+                if (showFull) {
+                    columns.add(InlineKeyboardButton.builder().text("\uD83D\uDE48 Скрыть")
+                        .callbackData("/bundles?$bundleIdx&$ttOnly&false").build())
+                } else {
+                    columns.add(InlineKeyboardButton.builder().text("\uD83E\uDDD0 Подробнее")
+                        .callbackData("/bundles?$bundleIdx&$ttOnly&true").build())
+                }
+
+                if (bundleIdx + 1 < bundles.size) {
+                    columns.add(
+                        InlineKeyboardButton.builder().text("➡️ Следующая").callbackData("/bundles?${bundleIdx + 1}&$ttOnly").build()
+                    )
+                }
                 keyboardRow(columns)
 
                 val availableCurrencies = user.serviceUser.userSettings.paymentMethods
@@ -137,7 +117,8 @@ class BundlesCommand : Command {
                     .distinct()
 
                 val chosenCurrency = user.serviceUser.userSettings.chosenCurrency
-                if (availableCurrencies.size > 1 || chosenCurrency != availableCurrencies.first()) {
+                if (availableCurrencies.size > 1
+                    || (chosenCurrency != null && chosenCurrency != availableCurrencies.first())) {
                     keyboardRow(with(mutableListOf<InlineKeyboardButton>()) {
                         add(
                             InlineKeyboardButton
@@ -160,7 +141,7 @@ class BundlesCommand : Command {
                     })
                 }
                 keyboardRow(mutableListOf(buttonsService.modeButton(user.serviceUser.userSettings)))
-                keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("Главное меню").callbackData("/start").build()))
+                keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("↩️ Главное меню").callbackData("/start").build()))
                 build()
             }
         )

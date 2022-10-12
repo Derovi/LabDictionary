@@ -21,9 +21,6 @@ class SpotCommand : Command {
         val before = user.serviceUser.userSettings.useSpot
         user.serviceUser.userSettings.useSpot = !before
         user.bot.updateService.userService.userRepository.save(user.serviceUser)
-
-        user.sendMessage("Торговля через спот <b>${ if (before) "Выключена" else "Включена"}</b>")
-
         user.bot.updateService.commandService.back(user)
     }
 

@@ -36,16 +36,23 @@ class SettingsCommand : Command {
             },
             InlineKeyboardMarkup.builder()
                 .keyboardRow(mutableListOf(
-                    InlineKeyboardButton.builder().text("Биржи").callbackData("/exchanges").build(),
-                    InlineKeyboardButton.builder().text("Токены").callbackData("/tokens").build(),
-                    InlineKeyboardButton.builder().text("Карточки").callbackData("/banks").build()
+                    InlineKeyboardButton.builder().text("\uD83D\uDCB1 Биржи").callbackData("/exchanges").build(),
+                    InlineKeyboardButton.builder().text("\uD83E\uDE99 Токены").callbackData("/tokens").build(),
+                    InlineKeyboardButton.builder().text("\uD83D\uDCB3 Карточки").callbackData("/banks").build()
                 )).keyboardRow(mutableListOf(
                     InlineKeyboardButton.builder()
-                        .text("${if (settings.useSpot) "Выключить" else "Включить"} спот")
+                        .text(if (settings.useSpot) "\uD83D\uDFE2 Спот [Включен]" else "\uD83D\uDD34 Спот [Выключен]")
                         .callbackData("/spot").build(),
                     InlineKeyboardButton.builder()
-                        .text("Уведомления [от ${settings.notificationThreshold}]%")
+                        .text("⚠️ Уведомления [от ${settings.notificationThreshold}%]")
                         .callbackData("/notifications").build(),
+                )).keyboardRow(mutableListOf(
+                    InlineKeyboardButton.builder()
+                        .text("\uD83D\uDCB5 Минимальный объем [${settings.minimumValue} usdt]")
+                        .callbackData("/setminvalue").build(),
+                    InlineKeyboardButton.builder()
+                        .text("\uD83D\uDCB0 Рабочий объем [${settings.workValue} usdt]")
+                        .callbackData("/setworkvalue").build(),
                 )).keyboardRow(mutableListOf(
                     buttonsService.modeButton(settings),
                 )).let {
@@ -55,7 +62,7 @@ class SettingsCommand : Command {
                     it
                 }
                 .keyboardRow(mutableListOf(
-                    InlineKeyboardButton.builder().text("На главную").callbackData("/start").build(),
+                    InlineKeyboardButton.builder().text("↩️ На главную").callbackData("/start").build(),
                 )).build()
         )
     }

@@ -46,6 +46,7 @@ class UpdateService {
                 val user = BotUser(
                     serviceUser,
                     text,
+                    update,
                     false,
                     langService.getLangMap(serviceUser.userSettings.lang, from.languageCode),
                     context

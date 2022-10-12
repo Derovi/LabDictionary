@@ -13,18 +13,19 @@ class StartCommand : Command {
 
     override fun use(user: BotUser, vararg args: String) {
         var text = with(StringBuilder()) {
+            append("<b>====================== Меню =====================</b>\n")
             append("<b>/bundles</b> - Получить список связок\n")
             append("<b>/settings</b> - Изменить настройки\n")
             append("<b>/guide</b> - Получить информацию\n")
-            append("<b>/subscription</b> - Данные о подписке\n")
+            append("<b>/subscription</b> - Информация о вашей подписке\n")
             toString()
         }
 
         val keyboardBuilder = InlineKeyboardMarkup.builder().keyboardRow(mutableListOf(
-            InlineKeyboardButton.builder().text("Связки").callbackData("/bundles").build(),
-            InlineKeyboardButton.builder().text("Настройки").callbackData("/settings").build(),
-            InlineKeyboardButton.builder().text("Гайд").callbackData("/guide").build(),
-            InlineKeyboardButton.builder().text("Подписка").callbackData("/subscription").build(),
+            InlineKeyboardButton.builder().text("\uD83D\uDCC9 Связки").callbackData("/bundles").build(),
+            InlineKeyboardButton.builder().text("⚙️ Настройки").callbackData("/settings").build(),
+            InlineKeyboardButton.builder().text("\uD83D\uDCD6 Инструкция").url("https://telegra.ph/Tarify-10-10").build(),
+            InlineKeyboardButton.builder().text("\uD83D\uDC49 Подписка").callbackData("/subscription").build(),
         ))
 
         if (user.isAdmin) {

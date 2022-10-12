@@ -18,7 +18,7 @@ interface Exchange {
                             ),
                         ) { mutableListOf() }.addAll(
                             fetch(OrderType.BUY, token, currency, paymentMethod)
-                                .filter { it.completeRate > 0 }.filter { it.maxLimit > 10 },
+                                .filter { it.completeRate > 0.49 },
                         )
 
                         result.getOrPut(
@@ -31,7 +31,7 @@ interface Exchange {
                             ),
                         ) { mutableListOf() }.addAll(
                             fetch(OrderType.SELL, token, currency, paymentMethod)
-                                .filter { it.completeRate > 0 }.filter { it.maxLimit > 10 },
+                                .filter { it.completeRate > 0.49 },
                         )
                         return@add result
                     }

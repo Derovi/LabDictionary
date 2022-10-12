@@ -37,6 +37,8 @@ class UserService {
             CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.CITIBANK)
         ),
         null,
+        50,
+        5000,
         mutableListOf(),
         null,
     )
@@ -64,6 +66,7 @@ class UserService {
         return BotUser(
             serviceUser,
             "",
+            null,
             false,
             langService.getLangMap(serviceUser.userSettings.lang, "ru"),
             context

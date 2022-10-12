@@ -17,25 +17,31 @@ class NotificationsDialog : Dialog {
 
     @Autowired
     lateinit var commandService: CommandService
-    override fun start(user: BotUser) {}
+    override fun start(user: BotUser) {
+        user.sendMessageWithBackButton(buildString {
+            append("⚠️ Уведомления [<b>от ${user.serviceUser.userSettings.notificationThreshold}%</b>]\n")
+            append("Вы будете получать уведомления о <b>Тейкер-Тейкер</b> связках со спредом <b>не меньше</b> указанного\n")
+            append("<i>Введите число</i>")
+            toString()
+        })
+    }
 
     override fun update(user: BotUser): Boolean {
         val text = user.message.replace(",", ".")
-        if (text.matches(Regex("[^0-9.]"))) {
-            user.sendMessage("<b>\"$text\" не является числом!</b>")
+        val percent = text.toDoubleOrNull()
+        if (percent == null) {
+            user.sendMessage("⚠️ <b>\"$text\"</b> не является числом!")
             commandService.back(user)
             return false
         }
-
-        val percent = text.toDoubleOrNull()
-        if (percent == null || percent < 0.1 || percent > 100) {
-            user.sendMessage("<b>Спред должен быть не меньше 0.1% и не больше 100%</b>")
+        if (percent < 0.5) {
+            user.sendMessage("⚠️ Спред должен быть не меньше <b>0.5%</b>")
             commandService.back(user)
             return false
         }
 
         user.serviceUser.userSettings.notificationThreshold = percent
-        user.sendMessage("Установлен спред: <b>$percent%</b>")
+        user.sendMessage("⚠️ Установлены уведомления [<b>от ${user.serviceUser.userSettings.notificationThreshold}%</b>]")
         commandService.back(user)
         return false
     }

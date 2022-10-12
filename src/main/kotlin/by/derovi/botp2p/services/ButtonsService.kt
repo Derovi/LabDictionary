@@ -10,21 +10,25 @@ class ButtonsService {
     fun modeButton(settings: UserSettings) =
         InlineKeyboardButton
             .builder()
-            .text("Изменить режим [${settings.tradingMode.readableName}]")
+            .text("\uD83D\uDC65 Изменить режим [${settings.tradingMode.readableName}]")
             .callbackData("/mode")
             .build()
+
+    val d = sequence<Int> {
+
+    }
 
     fun bansButton(settings: UserSettings) =
         InlineKeyboardButton
             .builder()
-            .text("Забаненные мейкеры [${settings.banned.size}]")
+            .text("\uD83D\uDEAB Забаненные мейкеры [${settings.banned.size}]")
             .callbackData("/bans")
             .build()
 
     fun backButton() =
         InlineKeyboardButton
             .builder()
-            .text("Назад")
+            .text("↩️ Назад")
             .callbackData("/back")
             .build()
 }

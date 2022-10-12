@@ -20,6 +20,8 @@ data class UserSettings(
     @ElementCollection(targetClass = CurrencyAndPaymentMethod::class)
     var paymentMethods: MutableList<CurrencyAndPaymentMethod>,
     var lang: String?,
+    var minimumValue: Int,
+    var workValue: Int,
     @ElementCollection(fetch = FetchType.EAGER)
     var banned: MutableList<Maker>,
     @Enumerated(value = EnumType.STRING)
