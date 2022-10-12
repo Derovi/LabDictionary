@@ -1,10 +1,7 @@
 package by.derovi.botp2p
 
 import by.derovi.botp2p.exchange.BundleSearch
-import by.derovi.botp2p.exchange.exchanges.Binance
-import by.derovi.botp2p.exchange.exchanges.Bybit
-import by.derovi.botp2p.exchange.exchanges.Huobi
-import by.derovi.botp2p.exchange.exchanges.OKX
+import by.derovi.botp2p.exchange.exchanges.*
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -18,7 +15,8 @@ class BotP2pApplication : CommandLineRunner {
 
     @Bean
     fun bundleSearchBean() = BundleSearch(
-        arrayOf(Huobi, Binance, OKX, Bybit)
+        arrayOf(Huobi, Binance, OKX, Bybit, Kucoin)
+//        arrayOf(Kucoin)
     )
 
     override fun run(vararg args: String?) {

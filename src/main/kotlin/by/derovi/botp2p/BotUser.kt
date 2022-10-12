@@ -50,7 +50,9 @@ class BotUser(
             message.replyMarkup = keyboard
             message.parseMode = "HTML"
             message.disableWebPagePreview()
-            bot.execute(message)
+            try {
+                bot.execute(message)
+            } catch (_: Exception) {}
         } else {
             val message = SendMessage()
             message.setChatId(serviceUser.chatId)
