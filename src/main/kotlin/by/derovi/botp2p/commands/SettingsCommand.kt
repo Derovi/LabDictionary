@@ -22,16 +22,17 @@ class SettingsCommand : Command {
 
         user.sendMessage(
             with(StringBuilder()) {
-                append("/exchanges [<b>${settings.exchanges.joinToString(", ")}</b>] - Указать биржи\n")
-                append("/notifications [<b>${settings.notificationThreshold}%</b>] - Параметры уведомлений\n")
-                append("/spot [<b>${if (settings.useSpot) "да" else "нет"}</b>] " +
-                        "- ${if (settings.useSpot) "Выключить" else "Включить"} спот в связках\n")
-                append("/tokens [<b>${settings.tokens.map(Token::readableName).joinToString(", ")}</b>] - Указать токены\n")
-                append("/banks [${settings.paymentMethodsAsMap.map { (currency, paymentMethod) -> "<b>${currency}</b>:" +
-                        " <i>${paymentMethod.joinToString(", ") }</i>" }.joinToString("; ") }] " +
-                        "- Указать банковские карточки\n")
-                append("/mode [<b>${settings.tradingMode.readableName}]</b> - Выбрать режим торговли\n")
-                append("/guide <b>- Подробнее о настройках</b>\n")
+                append("\uD83D\uDCB1 Биржи [<code>${settings.exchanges.joinToString(", ")}</code>]\n")
+                append("\uD83E\uDE99 Токены [<code>${settings.tokens.map(Token::readableName).joinToString(", ")}</code>]\n")
+                append(if (settings.useSpot) "\uD83D\uDFE2 Спот [<b>Включен</b>]\n" else "\uD83D\uDD34 Спот [<b>Выключен</b>]\n")
+                append("⚠️ Уведомления [от ${settings.notificationThreshold}%]\n")
+                append("\uD83D\uDCB5 Минимальный объем [${settings.minimumValue} usdt]\n")
+                append("\uD83D\uDCB0 Рабочий объем [${settings.workValue} usdt]\n")
+                append("\uD83D\uDC65 Режим торговли [<b>${settings.tradingMode.readableName}]</b>\n")
+                append("\uD83D\uDCB3 Карточки\n")
+                settings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
+                    append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
+                }
                 toString()
             },
             InlineKeyboardMarkup.builder()
