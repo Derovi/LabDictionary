@@ -18,11 +18,16 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.alessiop86.anti-antibot-cloudflare:anti-antibot-cloudflare-okhttpclient:1.2")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.seruco.encoding:base62:0.1.3")
+    implementation("com.nimbusds:nimbus-jose-jwt:8.19")
     implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:4.5.0")
+    implementation("net.sourceforge.htmlunit:htmlunit:2.51.0")
+    implementation("com.codeborne:phantomjsdriver:1.5.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.5.0")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")

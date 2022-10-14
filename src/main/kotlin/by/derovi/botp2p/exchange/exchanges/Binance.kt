@@ -6,46 +6,68 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
 
 object Binance : Exchange {
+    override fun getFetchTasks(): List<() -> Map<Setup, List<Offer>>> {
+        val fetchTasks = mutableListOf<() -> Map<Setup, List<Offer>>>()
+        for (token in supportedTokens()) {
+            for (currency in supportedCurrencies()) {
+                for (orderType in OrderType.values()) {
+                    for (page in 0 until 4) {
+                        fetchTasks.add {
+                            val payload = requestPayload(token, currency, orderType, page)
+                            val data = NetworkUtils.postRequest(
+                                "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search",
+                                payload,
+                                ContentType.APPLICATION_JSON
+                            )
+                            return@add parseResponse(token, orderType, currency, data).groupBy {
+                                Setup(token, currency, this, it.paymentMethod!!, orderType)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return fetchTasks
+    }
+
     override fun fetch(
         orderType: OrderType,
         token: Token,
         currency: Currency,
         paymentMethod: PaymentMethod
-    ): List<Offer> {
-        val result = mutableListOf<Offer>()
-        val payload = requestPayload(token, currency, orderType, paymentMethod, 1)
-        val data = NetworkUtils.postRequest("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", payload, ContentType.APPLICATION_JSON)
-        result.addAll(parseResponse(token, orderType, paymentMethod, currency, data))
-        result.forEach {
-            it.paymentMethod = paymentMethod
-            it.exchange = this
-        }
-        return result
-    }
+    ): List<Offer> = listOf()
 
-    fun parseResponse(token: Token, orderType: OrderType, paymentMethod: PaymentMethod, currency: Currency, data: String) =
-        ObjectMapper().readTree(data)["data"].map { Offer(
-            it["adv"]["price"].asDouble(),
-            token,
-            orderType,
-            it["adv"]["surplusAmount"].asDouble(),
-            it["adv"]["minSingleTransAmount"].asDouble(),
-            it["adv"]["maxSingleTransAmount"].asDouble(),
-            it["advertiser"]["nickName"].asText(),
-            (it["advertiser"]["monthFinishRate"].asDouble() * 100).toInt(),
-            it["advertiser"]["monthOrderCount"].asInt(),
-            true,
-            "https://p2p.binance.com/ru/trade/" +
-                    (if (orderType == OrderType.SELL) "sell/" else "${paymentMethodToCode[paymentMethod]}/") +
-                    "${tokenToCode[token]}?fiat=${currencyToCode[currency]}" +
-                    if (orderType == OrderType.SELL) "&payment=${paymentMethodToCode[paymentMethod]}" else ""
-        ) }.filter { it.isOnline }
+    fun parseResponse(token: Token, orderType: OrderType, currency: Currency, data: String) =
+        ObjectMapper().readTree(data)["data"].map { entry ->
+            entry["adv"]["tradeMethods"].map { tradeMethod ->
+                val paymentMethod = codeToPaymentMethod[tradeMethod["identifier"].asText()]
 
-    fun requestPayload(token: Token, currency: Currency, orderType: OrderType, paymentMethod: PaymentMethod, page: Int) =
+                Offer(
+                    entry["adv"]["price"].asDouble(),
+                    token,
+                    orderType,
+                    entry["adv"]["surplusAmount"].asDouble(),
+                    entry["adv"]["minSingleTransAmount"].asDouble(),
+                    entry["adv"]["maxSingleTransAmount"].asDouble(),
+                    entry["advertiser"]["nickName"].asText(),
+                    (entry["advertiser"]["monthFinishRate"].asDouble() * 100).toInt(),
+                    entry["advertiser"]["monthOrderCount"].asInt(),
+                    true,
+                    "https://p2p.binance.com/ru/trade/" +
+                            (if (orderType == OrderType.SELL) "sell/" else "${paymentMethod}/") +
+                            "${tokenToCode[token]}?fiat=${currencyToCode[currency]}" +
+                            if (orderType == OrderType.SELL) "&payment=${paymentMethod}" else "",
+                    paymentMethod,
+                    this
+                )
+            }.filter { it.paymentMethod != null }
+        }.flatten()
+
+    fun requestPayload(token: Token, currency: Currency, orderType: OrderType, page: Int) =
          "{\"proMerchantAds\":false," +
          "\"page\":$page," +
-         "\"rows\":10," +
-         "\"payTypes\":[\"${paymentMethodToCode[paymentMethod]}\"]," +
+         "\"rows\":20," +
+         "\"payTypes\":[]," +
          "\"countries\":[]," +
          "\"publisherType\":null," +
          "\"asset\":\"${tokenToCode[token]}\"," +
@@ -55,6 +77,7 @@ object Binance : Exchange {
     val tokenToCode = mapOf(
         Token.BTC to "BTC",
         Token.USDT to "USDT",
+        Token.BUSD to "BUSD",
         Token.ETH to "ETH",
         Token.BNB to "BNB"
     )
@@ -64,20 +87,20 @@ object Binance : Exchange {
 //        Currency.USD to "USD"
     )
 
-    private val paymentMethodToCode = mapOf(
-        PaymentMethod.TINKOFF to "TinkoffNew",
-        PaymentMethod.ROSBANK to "RosBank",
-        PaymentMethod.RAIFAIZEN to "RaiffeisenBank",
-        PaymentMethod.QIWI to "QIWI",
-        PaymentMethod.POSTBANK to "PostBankRussia",
-        PaymentMethod.MTSBANK to "MTSBank",
-        PaymentMethod.RUSSIANSTANDARD to "RussianStandardBank",
-        PaymentMethod.OTPBANK to "OTPBankRussia",
-        PaymentMethod.UNICREDIT to "UniCreditRussia",
-        PaymentMethod.CITIBANK to "CitibankRussia",
-        PaymentMethod.BCSBANK to "BCSBank",
-        PaymentMethod.YANDEXMONEY to "YandexMoneyNew",
-        PaymentMethod.URALSIB to "UralsibBank"
+    private val codeToPaymentMethod = mapOf(
+        "TinkoffNew" to PaymentMethod.TINKOFF,
+        "RosBank" to PaymentMethod.ROSBANK,
+        "RaiffeisenBank" to PaymentMethod.RAIFAIZEN,
+        "QIWI" to PaymentMethod.QIWI,
+        "PostBankRussia" to PaymentMethod.POSTBANK,
+        "MTSBank" to PaymentMethod.MTSBANK,
+        "RussianStandardBank" to PaymentMethod.RUSSIANSTANDARD,
+        "OTPBankRussia" to PaymentMethod.OTPBANK,
+        "UniCreditRussia" to PaymentMethod.UNICREDIT,
+        "CitibankRussia" to PaymentMethod.CITIBANK,
+        "BCSBank" to PaymentMethod.BCSBANK,
+        "YandexMoneyNew" to PaymentMethod.YANDEXMONEY,
+        "UralsibBank" to PaymentMethod.URALSIB
     )
 
     override fun supportedTokens(): Array<Token> {
@@ -85,7 +108,7 @@ object Binance : Exchange {
     }
 
     override fun supportedPaymentMethods(): Array<PaymentMethod> {
-        return paymentMethodToCode.keys.toTypedArray()
+        return codeToPaymentMethod.values.toTypedArray()
     }
 
     override fun supportedCurrencies(): Array<Currency> {

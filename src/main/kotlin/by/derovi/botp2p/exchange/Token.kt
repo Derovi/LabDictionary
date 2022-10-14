@@ -5,6 +5,7 @@ enum class Token(val readableName: String) {
     USDC("USDC"),
     BTC("BTC"),
     ETH("ETH"),
+    BCH("BCH"),
     BNB("BNB"),
     BUSD("BUSD"),
     EOS("EOS"),

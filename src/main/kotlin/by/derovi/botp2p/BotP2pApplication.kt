@@ -17,6 +17,7 @@ class BotP2pApplication : CommandLineRunner {
     fun bundleSearchBean() = BundleSearch(
         arrayOf(Huobi, Binance, OKX, Bybit, Kucoin)
 //        arrayOf(Kucoin)
+//        arrayOf(Binance)
     )
 
     override fun run(vararg args: String?) {

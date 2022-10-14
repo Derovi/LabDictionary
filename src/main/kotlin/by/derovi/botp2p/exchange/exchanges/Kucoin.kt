@@ -44,7 +44,11 @@ object Kucoin : Exchange {
                         entry["limitMinQuote"].asDouble(),
                         entry["limitMaxQuote"].asDouble(),
                         entry["nickName"].asText(),
-                        entry["dealOrderRate"].asText().substringBefore("%").toDouble().toInt(),
+                        entry["dealOrderRate"]
+                            .asText()
+                            .substringBefore("%")
+                            .toDoubleOrNull()
+                            ?.toInt() ?: 0,
                         entry["dealOrderNum"].asInt(),
                         true,
                         "https://www.kucoin.com/ru/otc" +

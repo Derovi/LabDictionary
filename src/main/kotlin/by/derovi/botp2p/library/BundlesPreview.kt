@@ -77,8 +77,9 @@ object BundlesPreview {
         "<b>[${idx + 1}]</b> " +
                 "${Utils.createLink(offer.username, offer.link)} - <b>${offer.paymentMethod}</b>, " +
                 "<b>${offer.token}</b> цена: <b>${offer.price} ${bundle.currency}</b>, " +
-                "[лимит ${offer.minLimit} - ${offer.maxLimit} ${bundle.currency}], " +
-                "[успешно ${offer.completeCount}, ${offer.completeRate}%]"
+                "[лимит ${offer.minLimit} - ${offer.maxLimit} ${bundle.currency}]" +
+                if (offer.completeCount == null) "" else
+                ", [успешно ${offer.completeCount}, ${offer.completeRate}%]"
 
     private fun offers(bundle: BundleSearchResult, nOffers: Int) = buildString {
         append("<b>Купить:</b>\n")

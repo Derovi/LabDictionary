@@ -15,6 +15,7 @@ class SpotService {
     val tokenToSymbol = mapOf(
         Token.BTC to "BTCUSDT",
         Token.ETH to "ETHUSDT",
+        Token.BCH to "BCHUSDT",
         Token.BNB to "BNBUSDT",
         Token.EOS to "EOSUSDT",
         Token.XRP to "XRPUSDT",
