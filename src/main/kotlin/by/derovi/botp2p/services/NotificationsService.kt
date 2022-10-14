@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
+import kotlin.concurrent.thread
 
 @Service
 class NotificationsService {
@@ -41,7 +42,8 @@ class NotificationsService {
         for (user in userRepository.findAll()) {
             val newBundleKeys = mutableListOf<BundleKey>()
             var notificationSent = false
-            for ((index, bundle) in (bundlesService.userToBundleSearchResulTT[user.userId] ?: listOf()).withIndex()) {
+            for ((index, bundle) in (bundlesService.userToBundleSearchResulTT[user.userId]
+                ?: listOf()).withIndex()) {
                 if (bundle.spreadWithFee >= user.userSettings.notificationThreshold / 100.0) {
                     val bundleKey = BundleKey(
                         bundle.currency,

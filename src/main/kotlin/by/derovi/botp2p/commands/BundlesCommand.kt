@@ -42,8 +42,9 @@ class BundlesCommand : Command {
         val showFull = args.getOrNull(2)?.toBooleanStrictOrNull() ?: false
         val bundles = if (ttOnly) bundlesService.userToBundleSearchResulTT[user.id] else bundlesService.userToBundleSearchResult[user.id]
 
-        val time = "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>"
+//        val time = "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>"
 
+        val time = "<i>${Utils.formatDate(System.currentTimeMillis())}</i>"
         // buttons
         // end buttons
 
@@ -64,7 +65,8 @@ class BundlesCommand : Command {
                     keyboardRow(mutableListOf(buttonsService.modeButton(user.serviceUser.userSettings)))
                     keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("↩️ Главное меню").callbackData("/start").build()))
                     build()
-                }
+                },
+                BotUser.UpdatableCommand(name, args.toList().toTypedArray())
             )
             return
         }
@@ -73,7 +75,7 @@ class BundlesCommand : Command {
 
         val bundle = bundles[bundleIdx]
         val text = with(StringBuilder()) {
-            append("<b>${bundleIdx + 1}/${bundles.size}, <i>${bundle.currency}</i></b>, " +
+            append("<b>${bundleIdx + 1}/${bundles.size}, ${bundle.currency}</b>, " +
                     "$time\n")
             if (showFull) {
                 append(BundlesPreview.fullView(bundle))
@@ -143,7 +145,8 @@ class BundlesCommand : Command {
                 keyboardRow(mutableListOf(buttonsService.modeButton(user.serviceUser.userSettings)))
                 keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("↩️ Главное меню").callbackData("/start").build()))
                 build()
-            }
+            },
+            BotUser.UpdatableCommand(name, args.toList().toTypedArray())
         )
     }
 }

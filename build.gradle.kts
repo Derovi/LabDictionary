@@ -26,6 +26,7 @@ dependencies {
     implementation("com.nimbusds:nimbus-jose-jwt:8.19")
     implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:4.5.0")
     implementation("net.sourceforge.htmlunit:htmlunit:2.51.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.codeborne:phantomjsdriver:1.5.0")
     implementation("org.seleniumhq.selenium:selenium-java:4.5.0")
     runtimeOnly("org.postgresql:postgresql")

@@ -47,6 +47,7 @@ class UpdateService {
                     serviceUser,
                     text,
                     update,
+                    update.callbackQuery?.message?.messageId,
                     false,
                     langService.getLangMap(serviceUser.userSettings.lang, from.languageCode),
                     context

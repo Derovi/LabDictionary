@@ -61,12 +61,13 @@ class UserService {
         }
     }
 
-    fun getBotUserById(id: Long): BotUser {
+    fun getBotUserById(id: Long, callbackMessageId: Int? = null): BotUser {
         val serviceUser = userRepository.findById(id).get()
         return BotUser(
             serviceUser,
             "",
             null,
+            callbackMessageId,
             false,
             langService.getLangMap(serviceUser.userSettings.lang, "ru"),
             context

@@ -38,6 +38,10 @@ class CommandService {
 
     fun lastCommand(botUser: BotUser) = userToCommandStack[botUser.id]?.lastOrNull() ?: "/start"
 
+    fun use(command: String, args: Array<String>, botUser: BotUser, addToStack: Boolean = true) {
+        use(command + "?" + args.joinToString("&"), botUser, addToStack)
+    }
+
     fun use(fullCommand: String, botUser: BotUser, addToStack: Boolean = true) {
         val name = ("$fullCommand?").substringBefore("?")
         val arguments = fullCommand.substringAfter("?").split("&")
