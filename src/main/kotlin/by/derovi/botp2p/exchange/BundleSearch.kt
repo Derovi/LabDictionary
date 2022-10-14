@@ -30,7 +30,7 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         exchanges.asSequence().map(Exchange::getFetchTasks).flatten().map {{
             it().forEach { (setup, offers) ->
                 newSetupToOffers.getOrPut(setup) { mutableListOf() }
-                    .addAll(offers)
+                    .addAll(offers.filter { it.completeRate == null || it.completeRate > 49 })
             }
         }}.forEach(pool::addTask)
         pool.shuffleTasks()

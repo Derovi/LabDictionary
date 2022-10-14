@@ -13,9 +13,9 @@ object Bybit : Exchange {
         for (token in supportedTokens()) {
             for (currency in supportedCurrencies()) {
                 for (orderType in OrderType.values()) {
-                    for (page in 0 until 6) {
+                    for (page in 0 until 4) {
                         fetchTasks.add {
-                            val payload = requestPayload(token, currency, orderType, 1)
+                            val payload = requestPayload(token, currency, orderType, page)
                             val data = NetworkUtils.postRequest(
                                 "https://api2.bybit.com/spot/api/otc/item/list",
                                 payload,

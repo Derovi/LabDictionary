@@ -10,40 +10,57 @@ object Huobi : Exchange {
         token: Token,
         currency: Currency,
         paymentMethod: PaymentMethod
-    ): List<Offer> {
-        val result = mutableListOf<Offer>()
-        val url = requestUrl(token, currency, orderType, paymentMethod, 1)
-        val data = NetworkUtils.getRequest(url)
-        result.addAll(parseResponse(token, orderType, data))
-        result.forEach {
-            it.paymentMethod = paymentMethod
-            it.exchange = this
+    ) = listOf<Offer>()
+
+    override fun getFetchTasks(): List<() -> Map<Setup, List<Offer>>> {
+        val fetchTasks = mutableListOf<() -> Map<Setup, List<Offer>>>()
+        for (token in supportedTokens()) {
+            for (currency in supportedCurrencies()) {
+                for (orderType in OrderType.values()) {
+                    for (page in 0 until 4) {
+                        fetchTasks.add {
+                            val url = requestUrl(token, currency, orderType, page)
+                            val data = NetworkUtils.getRequest(url)
+                            return@add parseResponse(token, orderType, data).groupBy {
+                                Setup(token, currency, this, it.paymentMethod!!, orderType)
+                            }
+                        }
+                    }
+                }
+            }
         }
-        return result
+        return fetchTasks
     }
 
     fun parseResponse(token: Token, orderType: OrderType, data: String) =
-        ObjectMapper().readTree(data)["data"].map { Offer(
-            it["price"].asDouble(),
-            token,
-            orderType,
-            it["tradeCount"].asDouble(),
-            it["minTradeLimit"].asDouble(),
-            it["maxTradeLimit"].asDouble(),
-            it["userName"].asText(),
-            it["orderCompleteRate"].asInt(),
-            it["tradeMonthTimes"].asInt(),
-            it["isOnline"].asBoolean(),
-            "https://www.huobi.com/ru-ru/fiat-crypto/trade/${if (orderType == OrderType.BUY) "buy" else "sell"}-${token.name.lowercase()}/"
-        ) }.filter { it.isOnline }
+        ObjectMapper().readTree(data)["data"].map { entry ->
+            entry["payMethods"].mapNotNull { idToPaymentMethod[it["payMethodId"].asInt()] }.map { paymentMethod ->
+                Offer(
+                    entry["price"].asDouble(),
+                    token,
+                    orderType,
+                    entry["tradeCount"].asDouble(),
+                    entry["minTradeLimit"].asDouble(),
+                    entry["maxTradeLimit"].asDouble(),
+                    entry["userName"].asText(),
+                    entry["orderCompleteRate"].asInt(),
+                    entry["tradeMonthTimes"].asInt(),
+                    entry["isOnline"].asBoolean(),
+                    "https://www.huobi.com/ru-ru/fiat-crypto/trade/" +
+                            "${if (orderType == OrderType.BUY) "buy" else "sell"}-${token.name.lowercase()}/",
+                    paymentMethod,
+                    this
+                )
+            }.filter { it.isOnline }
+        }.flatten()
 
-    fun requestUrl(coin: Token, currency: Currency, orderType: OrderType, paymentMethod: PaymentMethod, page: Int) =
+    fun requestUrl(coin: Token, currency: Currency, orderType: OrderType, page: Int) =
         "https://otc-api.trygofast.com/v1/data/trade-market" +
                 "?coinId=${coinToId[coin]}" +
                 "&currency=${currencyToId[currency]}" +
                 "&tradeType=${ if (orderType == OrderType.BUY) "sell" else "buy" }" +
                 "&currPage=$page" +
-                "&payMethod=${paymentMethodToId[paymentMethod]}" +
+                "&payMethod=0" +
                 "&acceptOrder=0" +
                 "&country=" +
                 "&blockType=general" +
@@ -66,22 +83,22 @@ object Huobi : Exchange {
 //        Currency.USD to 2
     )
 
-    private val paymentMethodToId = mapOf(
-        PaymentMethod.TINKOFF to 28,
-        PaymentMethod.ROSBANK to 358,
-        PaymentMethod.RAIFAIZEN to 36,
-        PaymentMethod.QIWI to 9,
-        PaymentMethod.SBERBANK to 29,
-        PaymentMethod.POSTBANK to 357,
-        PaymentMethod.MTSBANK to 356,
-        PaymentMethod.RUSSIANSTANDARD to 26,
-        PaymentMethod.OTPBANK to 45,
-        PaymentMethod.UNICREDIT to 363,
-        PaymentMethod.CITIBANK to 360,
-        PaymentMethod.BCSBANK to 170,
-        PaymentMethod.YANDEXMONEY to 19,
-        PaymentMethod.URALSIB to 179,
-        PaymentMethod.GAZPROMBANK to 351
+    private val idToPaymentMethod = mapOf(
+        28 to PaymentMethod.TINKOFF,
+        358 to PaymentMethod.ROSBANK,
+        36 to PaymentMethod.RAIFAIZEN,
+        9 to PaymentMethod.QIWI,
+        29 to PaymentMethod.SBERBANK,
+        357 to PaymentMethod.POSTBANK,
+        356 to PaymentMethod.MTSBANK,
+        26 to PaymentMethod.RUSSIANSTANDARD,
+        45 to PaymentMethod.OTPBANK,
+        363 to PaymentMethod.UNICREDIT,
+        360 to PaymentMethod.CITIBANK,
+        170 to PaymentMethod.BCSBANK,
+        19 to PaymentMethod.YANDEXMONEY,
+        179 to PaymentMethod.URALSIB,
+        351 to PaymentMethod.GAZPROMBANK
     )
 
     override fun supportedTokens(): Array<Token> {
@@ -89,7 +106,7 @@ object Huobi : Exchange {
     }
 
     override fun supportedPaymentMethods(): Array<PaymentMethod> {
-        return paymentMethodToId.keys.toTypedArray()
+        return idToPaymentMethod.values.toTypedArray()
     }
 
     override fun supportedCurrencies(): Array<Currency> {
