@@ -3,6 +3,7 @@ package by.derovi.botp2p.dialogs
 import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.exchange.BundleSearch
 import by.derovi.botp2p.exchange.Exchange
+import by.derovi.botp2p.exchange.Token
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -16,7 +17,20 @@ class ExchangesDialog : Dialog {
 
     @Autowired
     lateinit var commandService: CommandService
-    override fun start(user: BotUser) {}
+    override fun start(user: BotUser) {
+        val exchanges = bundleSearch.exchanges.map(Exchange::name)
+        user.sendMessageWithBackButton(buildString {
+            append("\uD83D\uDCB1 Биржи\n")
+            append("Установлены: <code>${
+                exchanges
+                    .filter { it in user.serviceUser.userSettings.exchanges }
+                    .joinToString(", ")}</code>\n"
+            )
+            append("Доступны: <code>${exchanges.joinToString(", ")}</code>\n")
+            append("<i>Введите биржи через запятую</i>")
+            toString()
+        })
+    }
 
     override fun update(user: BotUser): Boolean {
         val text = user.message
@@ -30,21 +44,14 @@ class ExchangesDialog : Dialog {
             if (exchange != null) {
                 newExchanges.add(exchange)
             } else {
-                user.sendMessage(
-                    with(StringBuilder()) {
-                        append("<b>Биржи \"$exchangeName\" не существует!</b>\n")
-                        append("Доступны: <i>${availableExchanges.joinToString(", ")}</i>\n")
-                        append("Установлены: <i>${currentExchanges.joinToString(", ")}</i>\n")
-                        append("<i>Биржи нужно перечислять через запятую</i>\nПример: <b>Huobi, Binance</b>")
-                        toString()
-                    }
-                )
+                user.sendMessage("\uD83D\uDCB1 Биржи <b>\"$exchangeName\"</b> не существует!")
                 commandService.back(user)
                 return false
             }
         }
         user.serviceUser.userSettings.exchanges = newExchanges
-        user.sendMessage("Установлены следующие биржи: <b>${newExchanges.joinToString(", ")}</b>")
+        user.sendMessage("\uD83E\uDE99 Установлены биржи " +
+                "[<code>${newExchanges.joinToString(", ")}</code>]")
         commandService.back(user)
         return false
     }

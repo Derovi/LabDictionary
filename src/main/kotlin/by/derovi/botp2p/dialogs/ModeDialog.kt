@@ -30,8 +30,12 @@ class ModeDialog : Dialog {
 
         user.sendMessage(
             with(StringBuilder()) {
+                append("\uD83D\uDC65 Изменить режим торговли\n")
                 TradingMode.values().forEach {
-                    append("<b>${it.readableName}</b><i> - ${it.description}</i>\n")
+                    if (user.serviceUser.userSettings.tradingMode == it) {
+                        append("<b>✓ </b>")
+                    }
+                    append("<b>${it.readableName}</b> - ${it.description}\n")
                 }
                 toString()
             },

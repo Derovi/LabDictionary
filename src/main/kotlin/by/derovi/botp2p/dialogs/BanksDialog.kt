@@ -7,6 +7,8 @@ import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 
 @Component
 @Scope("prototype")
@@ -22,33 +24,43 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     }
 
     lateinit var currency: Currency
-    override fun start(user: BotUser) {}
+    override fun start(user: BotUser) {
+        user.sendMessage(
+            buildString {
+                append("\uD83D\uDCB3️ Карточки\n")
+                append("Выберите валюту")
+                toString()
+            },
+            InlineKeyboardMarkup.builder().keyboardRow(
+                Currency.values().map(Currency::name).map {
+                    InlineKeyboardButton.builder().text(it).callbackData(it).build()
+                }
+            ).build()
+        )
+    }
 
     override fun update(user: BotUser): Boolean {
-        fun addBanksInfo(stringBuilder: StringBuilder, currentPaymentMethods: List<PaymentMethod>?) {
-            stringBuilder.append("Доступны: <i>${PaymentMethod.values().map(PaymentMethod::name)
-                .joinToString(", ")}</i>\n")
-            stringBuilder.append(
-                if (currentPaymentMethods == null || currentPaymentMethods.isEmpty())
-                    "<b>Установленных нет</b>\n"
-                else
-                    "Установлены: <i>${currentPaymentMethods.map(PaymentMethod::name)
-                        .joinToString(", ")}</i>\n"
-            )
-            stringBuilder.append("<i>Банки нужно перечислять через запятую</i>\nПример: <b>TINKOFF, SBERBANK</b>")
-        }
-
         if (state == State.CURRENCY) {
             val currency = Currency.values().find { it.name.equals(user.message, ignoreCase = true) }
             if (currency == null) {
-                user.sendMessage("<b>Валюта \"${user.message}\" не найдена!</b>")
+                user.sendMessage("\uD83D\uDCB3️ Валюта <b>\"${user.message}\"</b> не найдена!")
                 return false
             }
 
             user.sendMessageWithBackButton(
                 with(StringBuilder()) {
-                    append("<b>Укажите один или несколько банков</b>\n")
-                    addBanksInfo(this, user.serviceUser.userSettings.paymentMethodsAsMap[currency])
+                    append("\uD83D\uDCB3 Карточки <b>${currency.name}</b>\n")
+                    val currentPaymentMethods = user.serviceUser.userSettings.paymentMethodsAsMap[currency]?.sortedBy { it.name }
+                    val availablePaymentMethods = PaymentMethod.values().sortedBy { it.name }
+                    if (currentPaymentMethods != null && currentPaymentMethods.isNotEmpty()) {
+                        append("Установлены: <code>${
+                            currentPaymentMethods.map(PaymentMethod::name)
+                                .joinToString(", ")
+                        }</code>\n")
+                    }
+                    append("Доступны: <code>${availablePaymentMethods.map(PaymentMethod::name)
+                        .joinToString(", ")}</code>\n")
+                    append("<i>Введите биржи через запятую</i>")
                     toString()
                 }
             )
@@ -61,18 +73,14 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
             for (paymentMethodName in inputPaymentMethods) {
                 val paymentMethod = PaymentMethod.values().find { it.name.equals(paymentMethodName, ignoreCase = true) }
                 if (paymentMethod == null) {
-                    user.sendMessage(
-                        with(StringBuilder()) {
-                            append("<b>Банка \"$paymentMethodName\" не существует!</b>\n")
-                            addBanksInfo(this, user.serviceUser.userSettings.paymentMethodsAsMap[currency])
-                            toString()
-                        }
-                    )
+                    user.sendMessage("\uD83D\uDCB3 Банка ${if (paymentMethodName.isNotEmpty()) "<b>\"$paymentMethodName\"</b>" else ""} не существует!")
+                    commandService.back(user)
                     return false
                 }
                 newPaymentMethods.add(paymentMethod)
             }
-            user.sendMessage("Для <b>$currency</b> установлены: <b>${newPaymentMethods.distinct().joinToString(", ")}</b>")
+            user.sendMessage("\uD83D\uDCB3 Для <b>$currency</b> установлены" +
+                    " [<code>${newPaymentMethods.distinct().joinToString(", ")}</code>]")
             user.serviceUser.userSettings.paymentMethods.removeIf { it.currency == currency }
             user.serviceUser.userSettings.paymentMethods
                 .addAll(newPaymentMethods.stream().distinct().map { CurrencyAndPaymentMethod(currency, it) }.toList())

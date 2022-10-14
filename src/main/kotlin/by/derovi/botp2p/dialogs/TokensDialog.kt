@@ -17,7 +17,20 @@ class TokensDialog : Dialog {
 
     @Autowired
     lateinit var commandService: CommandService
-    override fun start(user: BotUser) {}
+
+    override fun start(user: BotUser) {
+        user.sendMessageWithBackButton(buildString {
+            append("\uD83E\uDE99 Токены\n")
+            append("Установлены: <code>${
+                Token.values()
+                    .filter { it in user.serviceUser.userSettings.tokens }
+                    .map(Token::name).joinToString(", ")}</code>\n"
+            )
+            append("Доступны: <code>${Token.values().map(Token::name).joinToString(", ")}</code>\n")
+            append("<i>Введите токены через запятую</i>")
+            toString()
+        })
+    }
 
     override fun update(user: BotUser): Boolean {
         val text = user.message
@@ -30,21 +43,14 @@ class TokensDialog : Dialog {
             if (token != null) {
                 newTokens.add(token)
             } else {
-                user.sendMessage(
-                    with(StringBuilder()) {
-                        append("<b>Токена \"$tokenName\" не существует!</b>\n")
-                        append("Доступны: <i>${Token.values().map(Token::name).joinToString(", ")}</i>\n")
-                        append("Установлены: <i>${currentTokens.joinToString(", ")}</i>\n")
-                        append("<i>Токены нужно перечислять через запятую</i>\nПример: <b>USDT, BTC</b>")
-                        toString()
-                    }
-                )
+                user.sendMessage("\uD83E\uDE99 Токена <b>\"$tokenName\"</b> не существует!")
                 commandService.back(user)
                 return false
             }
         }
         user.serviceUser.userSettings.tokens = newTokens
-        user.sendMessage("Установлены следующие токены: <b>${newTokens.map(Token::name).joinToString(", ")}</b>")
+        user.sendMessage("\uD83E\uDE99 Установлены токены [<code>${newTokens.map(Token::name)
+            .joinToString(", ")}</code>]")
         commandService.back(user)
         return false
     }

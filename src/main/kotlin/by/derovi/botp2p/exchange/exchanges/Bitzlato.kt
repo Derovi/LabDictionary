@@ -17,60 +17,60 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class TokenGenerator : () -> String {
-    private val jsonWebKey = """
-        {
-            "kty":"EC","alg":"ES256","crv":"P-256",
-            "x":"tLOYKCx9vqNHf7Rki_XgUy3BIaATYlLPq0i_x6uNqkM",
-            "y":"HbyYeECqJZp1INYaIsgVdoZb52104RHDNrG54gTzZjM",
-            "d":"cMdRLYGvIh0kmN4JE7HKz9G4miDL2yN5PiA8-0OkKAM"
-        }
-    """.trimIndent()
-    private val kid = 1
-    private val userId = 15138791
-
-    private val jwsHeader = JWSHeader.Builder(JWSAlgorithm.ES256)
-        .build()
-
-    private val signer: ECDSASigner = ECDSASigner(ECKey.parse(jsonWebKey))
-    private val rnd = Random()
-
-    override fun invoke(): String {
-        val claims = JWTClaimsSet.Builder()
-            .audience("usr")
-            .jwtID(rnd.nextLong().toString(Character.MAX_RADIX))
-            .issueTime(Date.from(Instant.now()))
-            .claim("uid", userId)
-            .build()
-        return SignedJWT(jwsHeader, claims).run {
-            sign(signer)
-            serialize().also {
-                println("JWT=$it")
-            }
-        }
-    }
-}
-
-fun main() {
-    val tokenGen = TokenGenerator()
-//    println(tokenGen())
-    val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build()
-    val req = HttpRequest.newBuilder()
-        .uri(URI.create("https://www.bitzlato.com/api/p2p/wallets/v2/"))
-        .timeout(Duration.ofSeconds(5))
-        .header("Authorization", "Bearer ${tokenGen()}")
-        .GET()
-        .build()
-    println("Request=$req")
-    client.sendAsync(req, HttpResponse.BodyHandlers.ofString())
-        .thenApply { response: HttpResponse<String?> ->
-            println(response.statusCode())
-            response
-        }
-        .thenApply { obj: HttpResponse<String?> -> obj.body() }
-        .thenAccept { x: String? -> println(x) }
-        .get()
-}
+//class TokenGenerator : () -> String {
+//    private val jsonWebKey = """
+//        {
+//            "kty":"EC","alg":"ES256","crv":"P-256",
+//            "x":"tLOYKCx9vqNHf7Rki_XgUy3BIaATYlLPq0i_x6uNqkM",
+//            "y":"HbyYeECqJZp1INYaIsgVdoZb52104RHDNrG54gTzZjM",
+//            "d":"cMdRLYGvIh0kmN4JE7HKz9G4miDL2yN5PiA8-0OkKAM"
+//        }
+//    """.trimIndent()
+//    private val kid = 1
+//    private val userId = 15138791
+//
+//    private val jwsHeader = JWSHeader.Builder(JWSAlgorithm.ES256)
+//        .build()
+//
+//    private val signer: ECDSASigner = ECDSASigner(ECKey.parse(jsonWebKey))
+//    private val rnd = Random()
+//
+//    override fun invoke(): String {
+//        val claims = JWTClaimsSet.Builder()
+//            .audience("usr")
+//            .jwtID(rnd.nextLong().toString(Character.MAX_RADIX))
+//            .issueTime(Date.from(Instant.now()))
+//            .claim("uid", userId)
+//            .build()
+//        return SignedJWT(jwsHeader, claims).run {
+//            sign(signer)
+//            serialize().also {
+//                println("JWT=$it")
+//            }
+//        }
+//    }
+//}
+//
+//fun main() {
+//    val tokenGen = TokenGenerator()
+////    println(tokenGen())
+//    val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build()
+//    val req = HttpRequest.newBuilder()
+//        .uri(URI.create("https://bitzlato.com/api2/p2p/public/exchange/dsa/?lang=ru&limit=20&skip=0&type=purchase&currency=RUB&cryptocurrency=BTC&isOwnerVerificated=false&isOwnerTrusted=false&isOwnerActive=false"))
+//        .timeout(Duration.ofSeconds(5))
+//        .header("Authorization", "Bearer ${tokenGen()}")
+//        .GET()
+//        .build()
+//    println("Request=$req")
+//    client.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+//        .thenApply { response: HttpResponse<String?> ->
+//            println(response.statusCode())
+//            response
+//        }
+//        .thenApply { obj: HttpResponse<String?> -> obj.body() }
+//        .thenAccept { x: String? -> println(x) }
+//        .get()
+//}
 
 //    driver.get("https://bitzlato.com/api2/p2p/public/exchange/dsa/?lang=ru&limit=20&skip=0&type=purchase&currency=RUB&cryptocurrency=BTC&isOwnerVerificated=false&isOwnerTrusted=false&isOwnerActive=false")
 
@@ -91,7 +91,6 @@ object Bitzlato : Exchange {
                     for (page in 0 until 8) {
                         fetchTasks.add {
                             val url = requestUrl(token, currency, orderType, 20, page * 20)
-                            println(url)
                             val data = NetworkUtils.getRequest(url)
                             return@add parseResponse(token, currency, orderType, data).groupBy {
                                 Setup(token, currency, this, it.paymentMethod!!, orderType)
@@ -105,7 +104,6 @@ object Bitzlato : Exchange {
     }
 
     fun parseResponse(token: Token, currency: Currency, orderType: OrderType, data: String): List<Offer> {
-        println(data)
         return ObjectMapper()
             .readTree(data)["data"]
             .map { entry ->
@@ -113,7 +111,7 @@ object Bitzlato : Exchange {
                     entry["rate"].asDouble(),
                     token,
                     orderType,
-                    entry["max"].asDouble(),
+                    entry["limitCryptocurrency"]["max"].asDouble(),
                     entry["limitCurrency"]["min"].asDouble(),
                     entry["limitCurrency"]["max"].asDouble(),
                     entry["owner"].asText(),
@@ -127,11 +125,11 @@ object Bitzlato : Exchange {
                     idToPaymentMethod[entry["paymethodId"].asInt()],
                     this
                 )
-            }
+            }.filter { it.paymentMethod != null }
     }
 
     fun requestUrl(token: Token, currency: Currency, orderType: OrderType, pageSize: Int, offset: Int) =
-        "https://bitzlato.com/api2/p2p/public/exchange/dsa/" +
+        "https://bitzlato.bz/api2/p2p/public/exchange/dsa/" +
                 "?lang=ru" +
                 "&limit=$pageSize" +
                 "&skip=$offset" +

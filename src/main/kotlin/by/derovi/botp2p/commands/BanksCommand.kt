@@ -20,14 +20,6 @@ class BanksCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        user.sendMessage(
-            "<b>Выберите валюту</b>",
-            InlineKeyboardMarkup.builder().keyboardRow(
-                Currency.values().map(Currency::name).map {
-                    InlineKeyboardButton.builder().text(it).callbackData(it).build()
-                }
-            ).build()
-        )
         dialogService.startDialog(user, BanksDialog::class.java)
     }
 }

@@ -15,7 +15,7 @@ class BotP2pApplication : CommandLineRunner {
 
     @Bean
     fun bundleSearchBean() = BundleSearch(
-        arrayOf(Huobi, Binance, OKX, Bybit, Kucoin)
+        arrayOf(Huobi, Binance, OKX, Bybit, Kucoin, Bitzlato)
 //        arrayOf(Kucoin)
 //        arrayOf(Binance)
     )

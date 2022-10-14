@@ -24,16 +24,6 @@ class TokensCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        user.sendMessageWithBackButton(
-            with(StringBuilder()) {
-                append("<b>Укажите один или несколько токенов</b>\n")
-                append("Доступны: <i>${Token.values().map(Token::name).joinToString(", ")}</i>\n")
-                append("Установлены: <i>${user.serviceUser.userSettings.tokens.joinToString(", ")}</i>\n")
-                append("<i>Токены нужно перечислять через запятую</i>\nПример: <b>USDT, BTC</b>")
-                toString()
-            }
-        )
-
         dialogService.startDialog(user, TokensDialog::class.java)
     }
 }

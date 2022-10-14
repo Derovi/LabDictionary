@@ -23,16 +23,6 @@ class ExchangesCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        user.sendMessageWithBackButton(
-            with(StringBuilder()) {
-                append("<b>Укажите одну или несколько бирж</b>\n")
-                append("Доступны: <i>${bundleSearch.exchanges.map(Exchange::name).joinToString(", ")}</i>\n")
-                append("Установлены: <i>${user.serviceUser.userSettings.exchanges.joinToString(", ")}</i>\n")
-                append("<i>Биржи нужно перечислять через запятую</i>\nПример: <b>Huobi, Binance</b>")
-                toString()
-            }
-        )
-
         dialogService.startDialog(user, ExchangesDialog::class.java)
     }
 }
