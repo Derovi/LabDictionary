@@ -36,7 +36,9 @@ class BundlesService {
             user.userSettings.useSpot,
             user.userSettings.tradingMode,
             user.userSettings.banned,
-            user.userSettings.chosenCurrency
+            user.userSettings.chosenCurrency,
+            user.userSettings.minimumValue,
+            user.userSettings.workValue
         )
         userToBundleSearchResult[user.userId] = result
         userToBundleSearchResulTT[user.userId] = result.filter {

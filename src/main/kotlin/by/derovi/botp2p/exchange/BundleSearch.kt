@@ -60,20 +60,27 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         exchange: Exchange,
         paymentMethods: Map<Currency, List<PaymentMethod>>,
         tradingMode: TradingMode,
-        bannedMakers: List<Maker>
+        bannedMakers: List<Maker>,
+        minValue: Int,
+        workValue: Int,
     ): Pair<List<Offer>, List<Offer>> {
         val buyOffers = mutableListOf<Offer>()
         val sellOffers = mutableListOf<Offer>()
 
+        fun criteria(offer: Offer) =
+            spotService.getUSDTAmount(offer.maxLimit, token, offer.price) >= minValue
+            &&spotService.getUSDTAmount( offer.minLimit, token, offer.price) <= workValue
+            && !bannedMakers.contains(Maker(offer.username, offer.exchange!!.name()))
+
         val currentPaymentMethods = paymentMethods.getOrDefault(currency, listOf())
         for (paymentMethod in currentPaymentMethods) {
-            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.BUY)]?.let {
+            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.BUY)]?.filter(::criteria)?.let {
                 buyOffers.addAll(it)
                 if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
                     sellOffers.add(it.first())
                 }
             }
-            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.let {
+            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
                 if (tradingMode == TradingMode.MAKER_MAKER_BINANCE_MERCHANT
                     || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
                     if (it.isNotEmpty()) {
@@ -86,9 +93,7 @@ class BundleSearch(val exchanges: Array<Exchange>) {
 
         buyOffers.sortBy { it.price }
         sellOffers.sortByDescending { it.price }
-
-        fun List<Offer>.filterBanned() = this.filter { !bannedMakers.contains(Maker(it.username, it.exchange!!.name())) }
-        return buyOffers.filterBanned() to sellOffers.filterBanned()
+        return buyOffers to sellOffers
     }
 
     fun searchBundles(
@@ -98,7 +103,9 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         useSpot: Boolean,
         tradingMode: TradingMode,
         bannedMakers: List<Maker>,
-        chosenCurrency: Currency?
+        chosenCurrency: Currency?,
+        minValue: Int,
+        workValue: Int
     ): List<BundleSearchResult> {
         val result = mutableListOf<BundleSearchResult>()
 
@@ -115,7 +122,9 @@ class BundleSearch(val exchanges: Array<Exchange>) {
                         exchange,
                         paymentMethods,
                         tradingMode,
-                        bannedMakers
+                        bannedMakers,
+                        minValue,
+                        workValue
                     )
                     val key = Key(currency, token, exchange)
                     ketToBuyOffers[key] = offers.first

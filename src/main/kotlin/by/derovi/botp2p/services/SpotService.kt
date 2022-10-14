@@ -22,6 +22,12 @@ class SpotService {
         Token.LTC to "LTCUSDT",
     )
 
+    fun getUSDTAmount(currencyAmount: Double, token: Token, tokenPrice: Double)
+        = currencyAmount / tokenPrice * price(token)
+
+    fun getCurrencyAmount(usdtAmount: Double, token: Token, tokenPrice: Double)
+            = usdtAmount / price(token) * tokenPrice
+
     fun price(token: Token): Double =
         prices[token] ?: throw java.lang.IllegalArgumentException("No spot price found for $token")
 
