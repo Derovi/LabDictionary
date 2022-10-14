@@ -2,55 +2,75 @@ package by.derovi.botp2p.exchange.exchanges
 
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.exchange.NetworkUtils
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
 
 object Bybit : Exchange {
+
+    override fun getFetchTasks(): List<() -> Map<Setup, List<Offer>>> {
+        val fetchTasks = mutableListOf<() -> Map<Setup, List<Offer>>>()
+        for (token in supportedTokens()) {
+            for (currency in supportedCurrencies()) {
+                for (orderType in OrderType.values()) {
+                    for (page in 0 until 6) {
+                        fetchTasks.add {
+                            val payload = requestPayload(token, currency, orderType, 1)
+                            val data = NetworkUtils.postRequest(
+                                "https://api2.bybit.com/spot/api/otc/item/list",
+                                payload,
+                                ContentType.APPLICATION_FORM_URLENCODED
+                            )
+                            return@add parseResponse(token, currency, orderType, data).groupBy {
+                                Setup(token, currency, this, it.paymentMethod!!, orderType)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return fetchTasks
+    }
+
     override fun fetch(
         orderType: OrderType,
         token: Token,
         currency: Currency,
         paymentMethod: PaymentMethod
-    ): List<Offer> {
-        val result = mutableListOf<Offer>()
-        val payload = requestPayload(token, currency, orderType, paymentMethod, 1)
-        val data = NetworkUtils.postRequest("https://api2.bybit.com/spot/api/otc/item/list", payload, ContentType.APPLICATION_FORM_URLENCODED)
-        result.addAll(parseResponse(token, currency, paymentMethod, orderType, data))
-        result.forEach {
-            it.paymentMethod = paymentMethod
-            it.exchange = this
-        }
-        return result
-    }
+    ): List<Offer> = listOf()
 
-    fun parseResponse(token: Token, currency: Currency, paymentMethod: PaymentMethod, orderType: OrderType, data: String): List<Offer> =
-        ObjectMapper().readTree(data)["result"]["items"].map {
-            Offer(
-                it["price"].asDouble(),
-                token,
-                orderType,
-                it["lastQuantity"].asDouble(),
-                it["minAmount"].asDouble(),
-                it["maxAmount"].asDouble(),
-                it["nickName"].asText(),
-                it["recentExecuteRate"].asInt(),
-                it["recentOrderNum"].asInt(),
-                it["isOnline"].asBoolean(),
-                "https://www.bybit.com/fiat/trade/otc/" +
-                        "?actionType=${if (orderType == OrderType.BUY) 1 else 0}" +
-                        "&token=${tokenToCode[token]}" +
-                        "&fiat=${currencyToCode[currency]}" +
-                        "&paymentMethod=${paymentMethodToCode[paymentMethod]}"
-            )
-        }
+    fun parseResponse(token: Token, currency: Currency, orderType: OrderType, data: String): List<Offer> =
+        ObjectMapper().readTree(data)["result"]["items"].map { entry ->
+            entry["payments"].mapNotNull { codeToPaymentMethod[it.asInt()] }.map { paymentMethod ->
+                Offer(
+                    entry["price"].asDouble(),
+                    token,
+                    orderType,
+                    entry["lastQuantity"].asDouble(),
+                    entry["minAmount"].asDouble(),
+                    entry["maxAmount"].asDouble(),
+                    entry["nickName"].asText(),
+                    entry["recentExecuteRate"].asInt(),
+                    entry["recentOrderNum"].asInt(),
+                    entry["isOnline"].asBoolean(),
+                    "https://www.bybit.com/fiat/trade/otc/" +
+                            "?actionType=${if (orderType == OrderType.BUY) 1 else 0}" +
+                            "&token=${tokenToCode[token]}" +
+                            "&fiat=${currencyToCode[currency]}" +
+                            "&paymentMethod=${paymentMethod}",
+                    paymentMethod,
+                    this
+                )
+            }.filter { it.isOnline }
+        }.flatten()
 
-    fun requestPayload(token: Token, currency: Currency, orderType: OrderType, paymentMethod: PaymentMethod, page: Int) =
+    fun requestPayload(token: Token, currency: Currency, orderType: OrderType, page: Int) =
         "userId=" +
         "&tokenId=${tokenToCode[token]}" +
         "&currencyId=${currencyToCode[currency]}" +
-        "&payment=${paymentMethodToCode[paymentMethod]}" +
+        "&payment=" +
         "&side=${if (orderType == OrderType.BUY) 1 else 0}" +
-        "&size=10" +
+        "&size=20" +
         "&page=$page" +
         "&amount="
 
@@ -65,32 +85,32 @@ object Bybit : Exchange {
         Currency.RUB to "RUB",
     )
 
-    private val paymentMethodToCode = mapOf(
-        PaymentMethod.BANK_TRANSFER to 14,
-        PaymentMethod.FPS to 27,
-        PaymentMethod.MTSBANK to 44,
-        PaymentMethod.OTPBANK to 49,
-        PaymentMethod.PAYEER to 51,
-        PaymentMethod.PERFECT_MONEY to 56,
-        PaymentMethod.POSTBANK to 59,
-        PaymentMethod.QIWI to 62,
-        PaymentMethod.RAIFAIZEN to 64,
-        PaymentMethod.ROSSELHOZBANK to 66,
-        PaymentMethod.SPORTBANK to 72,
-        PaymentMethod.TINKOFF to 75,
-        PaymentMethod.YANDEXMONEY to 88,
-        PaymentMethod.HOMECREDIT to 102,
-        PaymentMethod.ABSOLUTBANK to 173,
-        PaymentMethod.ROSBANK to 185,
-        PaymentMethod.CITIBANK to 231,
-        PaymentMethod.PARITETBANK to 333,
-        PaymentMethod.MTBANK to 332,
-        PaymentMethod.SBERBANK to 377,
-        PaymentMethod.GAZPROMBANK to 378,
-        PaymentMethod.ALFA_BANK to 379,
-        PaymentMethod.OTKRITIE to 380,
-        PaymentMethod.VTB to 381,
-        PaymentMethod.SBP_TRANSFER to 382
+    private val codeToPaymentMethod = mapOf(
+        14 to PaymentMethod.BANK_TRANSFER,
+        27 to PaymentMethod.FPS,
+        44 to PaymentMethod.MTSBANK,
+        49 to PaymentMethod.OTPBANK,
+        51 to PaymentMethod.PAYEER,
+        56 to PaymentMethod.PERFECT_MONEY,
+        59 to PaymentMethod.POSTBANK,
+        62 to PaymentMethod.QIWI,
+        64 to PaymentMethod.RAIFAIZEN,
+        66 to PaymentMethod.ROSSELHOZBANK,
+        72 to PaymentMethod.SPORTBANK,
+        75 to PaymentMethod.TINKOFF,
+        88 to PaymentMethod.YANDEXMONEY,
+        102 to PaymentMethod.HOMECREDIT,
+        173 to PaymentMethod.ABSOLUTBANK,
+        185 to PaymentMethod.ROSBANK,
+        231 to PaymentMethod.CITIBANK,
+        333 to PaymentMethod.PARITETBANK,
+        332 to PaymentMethod.MTBANK,
+        377 to PaymentMethod.SBERBANK,
+        378 to PaymentMethod.GAZPROMBANK,
+        379 to PaymentMethod.ALFA_BANK,
+        380 to PaymentMethod.OTKRITIE,
+        381 to PaymentMethod.VTB,
+        382 to PaymentMethod.SBP_TRANSFER
     )
 
     override fun supportedTokens(): Array<Token> {
@@ -98,7 +118,7 @@ object Bybit : Exchange {
     }
 
     override fun supportedPaymentMethods(): Array<PaymentMethod> {
-        return paymentMethodToCode.keys.toTypedArray()
+        return codeToPaymentMethod.values.toTypedArray()
     }
 
     override fun supportedCurrencies(): Array<Currency> {

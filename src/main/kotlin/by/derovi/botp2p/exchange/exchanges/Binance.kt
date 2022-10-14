@@ -39,9 +39,9 @@ object Binance : Exchange {
 
     fun parseResponse(token: Token, orderType: OrderType, currency: Currency, data: String) =
         ObjectMapper().readTree(data)["data"].map { entry ->
-            entry["adv"]["tradeMethods"].map { tradeMethod ->
-                val paymentMethod = codeToPaymentMethod[tradeMethod["identifier"].asText()]
-
+            entry["adv"]["tradeMethods"]
+                .mapNotNull { codeToPaymentMethod[it["identifier"].asText()] }
+                .map { paymentMethod ->
                 Offer(
                     entry["adv"]["price"].asDouble(),
                     token,
@@ -60,7 +60,7 @@ object Binance : Exchange {
                     paymentMethod,
                     this
                 )
-            }.filter { it.paymentMethod != null }
+            }
         }.flatten()
 
     fun requestPayload(token: Token, currency: Currency, orderType: OrderType, page: Int) =

@@ -34,8 +34,7 @@ object Kucoin : Exchange {
         ObjectMapper()
             .readTree(data)["items"]
             .map { entry ->
-                entry["adPayTypes"]
-                .map { adPayType ->
+                entry["adPayTypes"].mapNotNull { idToPaymentMethod[it["payTypeCode"].asText()] }.map { paymentMethod ->
                     Offer(
                         entry["floatPrice"].asDouble(),
                         token,
@@ -55,10 +54,10 @@ object Kucoin : Exchange {
                                 "/${if (orderType == OrderType.BUY) "buy" else "sell"}" +
                                 "/${tokenToId[token]}" +
                                 "/${currencyToId[currency]}",
-                        idToPaymentMethod[adPayType["payTypeCode"].asText()],
+                        paymentMethod,
                         this
                     )
-                }.filter { it.paymentMethod != null }
+                }
             }.flatten()
 
     fun requestUrl(token: Token, currency: Currency, orderType: OrderType, page: Int, pageSize: Int) =
