@@ -42,6 +42,8 @@ class NotificationsService {
             var notificationSent = false
             for ((index, bundle) in (bundlesService.userToBundleSearchResulTT[user.userId]
                 ?: listOf()).withIndex()) {
+                println(bundle.spreadWithFee)
+                println(threshold / 100.0)
                 if (bundle.spreadWithFee >= threshold / 100.0) {
                     val bundleKey = BundleKey(
                         bundle.currency,

@@ -47,7 +47,7 @@ class SettingsCommand : Command {
                         .callbackData("/spot").build(),
                     InlineKeyboardButton.builder()
                         .text(settings.notificationThreshold.let {
-                            "⚠️ Уведомления [${if (it == null) "Откл.]" else "от $it%"}"
+                            "⚠️ Уведомления [${if (it == null) "Откл." else "от $it%"}]"
                         })
                         .callbackData("/notifications").build(),
                 )).keyboardRow(mutableListOf(

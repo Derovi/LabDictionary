@@ -35,7 +35,7 @@ import java.util.*
 //    private val signer: ECDSASigner = ECDSASigner(ECKey.parse(jsonWebKey))
 //    private val rnd = Random()
 //
-//    override fun invoke(): String {
+//    override fun invoke(): String {x
 //        val claims = JWTClaimsSet.Builder()
 //            .audience("usr")
 //            .jwtID(rnd.nextLong().toString(Character.MAX_RADIX))
@@ -85,21 +85,21 @@ object Bitzlato : Exchange {
 
     override fun getFetchTasks(): List<() -> Map<Setup, List<Offer>>> {
         val fetchTasks = mutableListOf<() -> Map<Setup, List<Offer>>>()
-        for (token in supportedTokens()) {
-            for (currency in supportedCurrencies()) {
-                for (orderType in OrderType.values()) {
-                    for (page in 0 until 8) {
-                        fetchTasks.add {
-                            val url = requestUrl(token, currency, orderType, 20, page * 20)
-                            val data = NetworkUtils.getRequest(url)
-                            return@add parseResponse(token, currency, orderType, data).groupBy {
-                                Setup(token, currency, this, it.paymentMethod!!, orderType)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        for (token in supportedTokens()) {
+//            for (currency in supportedCurrencies()) {
+//                for (orderType in OrderType.values()) {
+//                    for (page in 0 until 8) {
+//                        fetchTasks.add {
+//                            val url = requestUrl(token, currency, orderType, 20, page * 20)
+//                            val data = NetworkUtils.getRequest(url)
+//                            return@add parseResponse(token, currency, orderType, data).groupBy {
+//                                Setup(token, currency, this, it.paymentMethod!!, orderType)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return fetchTasks
     }
 
