@@ -63,6 +63,7 @@ class UpdateService {
                     dialogService.continueDialog(user)
                 }
 
+                userService.userIdToLastAction[user.id] = System.currentTimeMillis()
                 userService.userRepository.save(user.serviceUser)
             }
 

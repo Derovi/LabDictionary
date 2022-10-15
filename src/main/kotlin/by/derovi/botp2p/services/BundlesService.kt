@@ -1,9 +1,6 @@
 package by.derovi.botp2p.services
 
-import by.derovi.botp2p.exchange.BundleSearch
-import by.derovi.botp2p.exchange.BundleSearchResult
-import by.derovi.botp2p.exchange.OrderType
-import by.derovi.botp2p.exchange.PaymentMethod
+import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.Role
 import by.derovi.botp2p.model.ServiceUser
 import by.derovi.botp2p.model.UserRepository
@@ -13,6 +10,14 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 import javax.transaction.Transactional
 import kotlin.concurrent.thread
+
+data class BundleKey(
+    val currency: Currency,
+    val buyToken: Token,
+    val sellToken: Token,
+    val buyExchange: Exchange,
+    val sellExchange: Exchange
+)
 
 @Service
 class BundlesService {
@@ -27,6 +32,15 @@ class BundlesService {
 
     @Autowired
     lateinit var userRepository: UserRepository
+
+    fun findBundle(userId: Long, bundleKey: BundleKey): BundleSearchResult? =
+        userToBundleSearchResulTT[userId]?.find {
+            it.currency == bundleKey.currency
+            && it.buyToken == bundleKey.buyToken
+            && it.sellToken == bundleKey.sellToken
+            && it.buyExchange == bundleKey.buyExchange
+            && it.sellExchange == bundleKey.sellExchange
+        }
 
     fun searchBundlesForUser(user: ServiceUser) {
         val result = bundleSearch.searchBundles(

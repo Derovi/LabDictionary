@@ -1,6 +1,7 @@
 package by.derovi.botp2p.commands
 
 import by.derovi.botp2p.BotUser
+import by.derovi.botp2p.dialogs.NotificationsDialog
 import by.derovi.botp2p.exchange.Token
 import by.derovi.botp2p.model.Role
 import by.derovi.botp2p.services.ButtonsService
@@ -25,7 +26,7 @@ class SettingsCommand : Command {
                 append("\uD83D\uDCB1 Биржи [<code>${settings.exchanges.joinToString(", ")}</code>]\n")
                 append("\uD83E\uDE99 Токены [<code>${settings.tokens.map(Token::readableName).joinToString(", ")}</code>]\n")
                 append(if (settings.useSpot) "\uD83D\uDFE2 Спот [<b>Включен</b>]\n" else "\uD83D\uDD34 Спот [<b>Выключен</b>]\n")
-                append("⚠️ Уведомления [от ${settings.notificationThreshold}%]\n")
+                append("${NotificationsDialog.notificationsTitle(settings.notificationThreshold)}\n")
                 append("\uD83D\uDCB5 Минимальный объем [${settings.minimumValue} usdt]\n")
                 append("\uD83D\uDCB0 Рабочий объем [${settings.workValue} usdt]\n")
                 append("\uD83D\uDC65 Режим торговли [<b>${settings.tradingMode.readableName}]</b>\n")
@@ -45,7 +46,9 @@ class SettingsCommand : Command {
                         .text(if (settings.useSpot) "\uD83D\uDFE2 Спот [Включен]" else "\uD83D\uDD34 Спот [Выключен]")
                         .callbackData("/spot").build(),
                     InlineKeyboardButton.builder()
-                        .text("⚠️ Уведомления [от ${settings.notificationThreshold}%]")
+                        .text(settings.notificationThreshold.let {
+                            "⚠️ Уведомления [${if (it == null) "Откл.]" else "от $it%"}"
+                        })
                         .callbackData("/notifications").build(),
                 )).keyboardRow(mutableListOf(
                     InlineKeyboardButton.builder()

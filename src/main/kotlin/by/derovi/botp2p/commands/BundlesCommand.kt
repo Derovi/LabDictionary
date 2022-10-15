@@ -42,9 +42,8 @@ class BundlesCommand : Command {
         val showFull = args.getOrNull(2)?.toBooleanStrictOrNull() ?: false
         val bundles = if (ttOnly) bundlesService.userToBundleSearchResulTT[user.id] else bundlesService.userToBundleSearchResult[user.id]
 
-//        val time = "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>"
+        val time = "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>"
 
-        val time = "<i>${Utils.formatDate(System.currentTimeMillis())}</i>"
         // buttons
         // end buttons
 

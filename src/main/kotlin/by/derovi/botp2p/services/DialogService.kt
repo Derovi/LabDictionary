@@ -17,6 +17,7 @@ class DialogService {
     val userIDToDialog = mutableMapOf<Long, Dialog>()
 
     fun isDialogActive(botUser: BotUser) = userIDToDialog.contains(botUser.id)
+    fun isDialogActive(userId: Long) = userIDToDialog.contains(userId)
 
     fun <T : Dialog> createDialogObject(dialogClass: Class<T>) = applicationContext.getBean(dialogClass)
 

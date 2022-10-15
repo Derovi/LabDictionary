@@ -25,6 +25,8 @@ class UserService {
     @Autowired
     lateinit var langService: LangService
 
+    val userIdToLastAction = mutableMapOf<Long, Long>()
+
     fun defaultSettings() = UserSettings(
         0.15,
         false,
