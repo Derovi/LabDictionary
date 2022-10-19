@@ -64,11 +64,20 @@ class CommandService {
             command.use(botUser, *arguments.toTypedArray())
         } else {
             botUser.sendMessage(
-                "<b>Для этой команды нужна подписка <i>${command.role.readableName}</i></b>!",
-                InlineKeyboardMarkup.builder().keyboardRow(mutableListOf(
-                    InlineKeyboardButton.builder().text("Подписка").callbackData("/subscription").build(),
-                    InlineKeyboardButton.builder().text("На главную").callbackData("/start").build(),
-                )).build()
+                "Для этой команды нужна подписка <b>${command.role.readableName}</b>!",
+                with(InlineKeyboardMarkup.builder()) {
+                    keyboardRow(mutableListOf(
+                        InlineKeyboardButton.builder()
+                            .text("\uD83D\uDC49 Подписка")
+                            .callbackData("/subscription").build()
+                    ))
+                    keyboardRow(mutableListOf(
+                        InlineKeyboardButton.builder()
+                            .text("↩️ На главную").
+                            callbackData("/start").build()
+                    ))
+                    build()
+                }
             )
         }
     }

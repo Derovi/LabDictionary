@@ -66,7 +66,7 @@ class PromoService {
         while (true) {
             val randomId = randomPromoIdWithoutValidation()
             if (!promoRepository.existsById(randomId)) {
-                val promo = Promo(randomPromoIdWithoutValidation(), discount, referId, expirationDate)
+                val promo = Promo(randomId, discount, referId, expirationDate)
                 promoRepository.save(promo)
                 return promo
             }

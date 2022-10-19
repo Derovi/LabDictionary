@@ -17,9 +17,6 @@ class SubscriptionService {
     lateinit var userRepository: UserRepository
 
     @Autowired
-    lateinit var commandService: CommandService
-
-    @Autowired
     lateinit var userService: UserService
 
     @Autowired
@@ -31,7 +28,7 @@ class SubscriptionService {
         }
         if (botUser.serviceUser.subscribedUntil >= System.currentTimeMillis()) {
             botUser.serviceUser.role = Role.UNSUBSCRIBED
-            commandService.adjustSettingsAccordingToPermissions(botUser)
+//            commandService.adjustSettingsAccordingToPermissions(botUser)
             botUser.sendMessage(
                 "<b>Ваша подписка <i>${botUser.serviceUser.role.readableName}</i> закончилась!</b>",
                 InlineKeyboardMarkup.builder().keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("Продлить").callbackData("/subscription").build())).build()
@@ -44,8 +41,8 @@ class SubscriptionService {
         userRepository.findAll().map { userService.getBotUserById(it.userId) }.forEach(::update)
     }
 
-    fun subscribe(id: Long, role: Role, days: Long) {
-        val millis = days * 24 * 60 * 60 * 1000
+    fun subscribe(id: Long, role: Role, days: Int) {
+        val millis = days * 24L * 60 * 60 * 1000
         userRepository.findById(id).ifPresent {
             if (it.role == role) {
                 it.subscribedUntil += millis
@@ -53,12 +50,16 @@ class SubscriptionService {
                 it.role = role
                 it.subscribedUntil = System.currentTimeMillis() + millis
             }
+            userRepository.save(it)
             if (it.referPromo == null) {
-                it.referPromo = promoService.createPromo(
+                val promo = promoService.createPromo(
                     promoService.referDiscount,
                     referId = id
                 )
+                println(promo.id)
+                it.referPromo = promo
             }
+            userRepository.save(it)
         }
     }
 }

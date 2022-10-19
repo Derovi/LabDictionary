@@ -163,12 +163,12 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         val exchanges = merge(
             searchSettingsMap,
             { it.exchanges.toSet() },
-            { it.toList() }
+            { it }
         )
         val tokens = merge(
             searchSettingsMap,
             { it.tokens.toSet() },
-            { it.toList() }
+            { it }
         )
 
         for (currency in paymentMethods.keys) {

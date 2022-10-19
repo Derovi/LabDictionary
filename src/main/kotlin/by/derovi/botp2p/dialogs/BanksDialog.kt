@@ -30,10 +30,10 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     }
 
     lateinit var currency: Currency
-    lateinit var searchSettings: SearchSettings
+    lateinit var args: List<String>
 
     override fun start(user: BotUser, args: List<String>) {
-        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+        this.args = args
 
         user.sendMessage(
             buildString {
@@ -50,6 +50,8 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     }
 
     override fun update(user: BotUser): Boolean {
+        val searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+
         if (state == State.CURRENCY) {
             val currency = Currency.values().find { it.name.equals(user.message, ignoreCase = true) }
             if (currency == null) {

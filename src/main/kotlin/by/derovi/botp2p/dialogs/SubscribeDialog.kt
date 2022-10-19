@@ -90,7 +90,7 @@ class SubscribeDialog(var state: State = State.USERNAME) : Dialog {
                return true
            }
        } else {
-           val days = user.message.toLongOrNull()
+           val days = user.message.toIntOrNull()
            if (days == null) {
                user.sendMessage("<b>\"${user.message}\" не является числом!</b>")
                updateService.useCommandWithArguments("/user#${userId}", user)
@@ -99,7 +99,7 @@ class SubscribeDialog(var state: State = State.USERNAME) : Dialog {
                val botUser = userService.getBotUserById(userId!!)
                user.sendMessage("<b>Пользователь @${botUser.loginOrId} подписан на</b> <i>${role.readableName}</i> <b>на $days дней!</b>")
                subscribtionService.subscribe(userId!!, role, days)
-               updateService.useCommandWithArguments("/user#${userId}", user)
+//               updateService.useCommandWithArguments("/user#${userId}", user)
                botUser.sendMessage(when(role) {
                    Role.ADMIN -> "<b>Держи админку щегол!</b>"
                    Role.UNSUBSCRIBED -> "<b>Ваша подписка отменена!</b>"
