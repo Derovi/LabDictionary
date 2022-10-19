@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Scope("prototype")
-class MinValueDialog() : Dialog {
+class MinValueDialog : Dialog {
     @Autowired
     lateinit var bundleSearch: BundleSearch
 
@@ -18,7 +18,7 @@ class MinValueDialog() : Dialog {
     lateinit var commandService: CommandService
 
     lateinit var currency: Currency
-    override fun start(user: BotUser) {
+    override fun start(user: BotUser, args: List<String>) {
         user.sendMessageWithBackButton(buildString {
             append("\uD83D\uDCB5 Минимальный объем [<b>${user.serviceUser.userSettings.minimumValue} usdt</b>]\n")
             append("Связки с меньшим объемом показываться <b>не</b> будут   \n")

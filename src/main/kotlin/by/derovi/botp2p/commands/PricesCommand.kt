@@ -47,8 +47,8 @@ class PricesCommand : Command {
             Currency.values().find { it.name == args[0] } ?: return,
             Token.values().find { it.name == args[1] } ?: return,
             Token.values().find { it.name == args[2] } ?: return,
-            bundleSearch.exchanges.find { it.name() == args[3] } ?: return,
-            bundleSearch.exchanges.find { it.name() == args[4] } ?: return
+            bundleSearch.commonExchanges.find { it.name() == args[3] } ?: return,
+            bundleSearch.commonExchanges.find { it.name() == args[4] } ?: return
         )
 
         val showFull = if (args.size < 6) false else args[5].toBooleanStrictOrNull() ?: false

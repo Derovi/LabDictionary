@@ -24,6 +24,6 @@ class TokensCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        dialogService.startDialog(user, TokensDialog::class.java)
+        dialogService.startDialog(user, TokensDialog::class.java, args.toList())
     }
 }

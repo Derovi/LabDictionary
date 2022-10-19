@@ -3,6 +3,7 @@ package by.derovi.botp2p.dialogs
 import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
+import by.derovi.botp2p.model.SettingsMode
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -12,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 @Component
 @Scope("prototype")
-class ModeDialog : Dialog {
+class SettingsModeDialog : Dialog {
     @Autowired
     lateinit var bundleSearch: BundleSearch
 
@@ -21,42 +22,40 @@ class ModeDialog : Dialog {
 
     lateinit var currency: Currency
     override fun start(user: BotUser, args: List<String>) {
-        fun buttonForMode(mode: TradingMode) =
+        fun buttonForMode(mode: SettingsMode) =
             InlineKeyboardButton
                 .builder()
-                .text(mode.readableName + if (user.serviceUser.userSettings.tradingMode == mode) " ✓" else "")
+                .text(mode.readableName + if (user.serviceUser.userSettings.settingsMode == mode) " ✓" else "")
                 .callbackData(mode.name)
                 .build()
 
         user.sendMessage(
             with(StringBuilder()) {
-                append("\uD83D\uDC65 Изменить режим торговли\n")
-                TradingMode.values().forEach {
-                    if (user.serviceUser.userSettings.tradingMode == it) {
+                append("\uD83D\uDC65 Изменить режим настроек\n")
+                SettingsMode.values().forEach {
+                    if (user.serviceUser.userSettings.settingsMode == it) {
                         append("<b>✓ </b>")
                     }
                     append("<b>${it.readableName}</b> - ${it.description}\n")
                 }
                 toString()
             },
-            InlineKeyboardMarkup.builder()
-                .keyboardRow(mutableListOf(
-                    buttonForMode(TradingMode.TAKER_TAKER),
-                    buttonForMode(TradingMode.TAKER_MAKER)
-                )).keyboardRow(mutableListOf(
-                    buttonForMode(TradingMode.MAKER_MAKER_NO_BINANCE),
-                    buttonForMode(TradingMode.MAKER_MAKER_BINANCE_MERCHANT)
-                )).build()
+            with(InlineKeyboardMarkup.builder()) {
+                keyboardRow(mutableListOf(buttonForMode(SettingsMode.STANDARD)))
+                keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL)))
+                keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL_TAKER_MAKER)))
+                build()
+            }
         )
     }
 
     override fun update(user: BotUser): Boolean {
-        val mode = TradingMode.values().find { it.name.equals(user.message, ignoreCase = true) }
+        val mode = SettingsMode.values().find { it.name.equals(user.message, ignoreCase = true) }
         if (mode == null) {
             user.sendMessage("<b>Режим</b> <i>${user.message}<i> <b>не найден!</b>")
             commandService.back(user)
         } else {
-            user.serviceUser.userSettings.tradingMode = mode
+            user.serviceUser.userSettings.settingsMode = mode
             user.searchBundles()
             commandService.back(user)
         }

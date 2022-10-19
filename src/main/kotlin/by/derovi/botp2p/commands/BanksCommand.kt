@@ -20,6 +20,6 @@ class BanksCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        dialogService.startDialog(user, BanksDialog::class.java)
+        dialogService.startDialog(user, BanksDialog::class.java, args.toList())
     }
 }

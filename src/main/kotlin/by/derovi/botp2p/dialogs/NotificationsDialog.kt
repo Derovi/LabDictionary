@@ -28,7 +28,7 @@ class NotificationsDialog : Dialog {
 
     @Autowired
     lateinit var commandService: CommandService
-    override fun start(user: BotUser) {
+    override fun start(user: BotUser, args: List<String>) {
         user.sendMessage(
             buildString {
                 append("${notificationsTitle(user.serviceUser.userSettings.notificationThreshold)}\n")

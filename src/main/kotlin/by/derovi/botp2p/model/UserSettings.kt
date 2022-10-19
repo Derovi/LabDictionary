@@ -12,27 +12,39 @@ data class UserSettings(
     var useSpot: Boolean,
     @Enumerated(value = EnumType.STRING)
     var tradingMode: TradingMode,
-    @Enumerated(value = EnumType.STRING)
-    @ElementCollection(targetClass = Token::class)
-    var tokens: MutableList<Token>,
-    @ElementCollection
-    var exchanges: MutableList<String>,
-    @ElementCollection(targetClass = CurrencyAndPaymentMethod::class)
-    var paymentMethods: MutableList<CurrencyAndPaymentMethod>,
     var lang: String?,
     var minimumValue: Int,
     var workValue: Int,
     @ElementCollection(fetch = FetchType.EAGER)
     var banned: MutableList<Maker>,
     @Enumerated(value = EnumType.STRING)
-    var chosenCurrency: Currency?
+    var chosenCurrency: Currency?,
+    var settingsMode: SettingsMode,
+    @OneToOne
+    var commonSettings: SearchSettings,
+    @OneToOne
+    var buySettings: SearchSettings,
+    @OneToOne
+    var sellSettings: SearchSettings,
+    @OneToOne
+    val buyTakerSettings: SearchSettings,
+    @OneToOne
+    val sellTakerSettings: SearchSettings,
+    @OneToOne
+    val buyMakerSettings: SearchSettings,
+    @OneToOne
+    val sellMakerSettings: SearchSettings
 ) {
-    val paymentMethodsAsMap: Map<Currency, List<PaymentMethod>>
-        get() {
-            val result = mutableMapOf<Currency, MutableList<PaymentMethod>>()
-            for (currencyAndPM in paymentMethods) {
-                result.getOrPut(currencyAndPM.currency) { mutableListOf() }.add(currencyAndPM.paymentMethod)
-            }
-            return result
+    fun getSearchSettings(buy: Boolean, taker: Boolean) =
+        when (settingsMode) {
+            SettingsMode.STANDARD -> commonSettings
+            SettingsMode.BUY_SELL -> if (buy) buySettings else sellSettings
+            SettingsMode.BUY_SELL_TAKER_MAKER -> when(buy to taker) {
+                true to true -> buyTakerSettings
+                false to true -> sellTakerSettings
+                true to false -> buyMakerSettings
+                false to false -> sellMakerSettings
+                else -> throw Error("Impossible branch")
         }
+    }
 }

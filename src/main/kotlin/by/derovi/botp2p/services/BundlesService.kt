@@ -2,6 +2,7 @@ package by.derovi.botp2p.services
 
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.Role
+import by.derovi.botp2p.model.SearchSettings
 import by.derovi.botp2p.model.ServiceUser
 import by.derovi.botp2p.model.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,10 +44,24 @@ class BundlesService {
         }
 
     fun searchBundlesForUser(user: ServiceUser) {
+        fun makeWrapper(searchSettings: SearchSettings) = BundleSearch.SearchSettingsWrapper(
+            searchSettings.tokens,
+            searchSettings.exchanges.mapNotNull { name -> bundleSearch.commonExchanges.find { it.name() == name } },
+            searchSettings.paymentMethodsAsMap,
+        )
+
         val result = bundleSearch.searchBundles(
-            user.userSettings.tokens,
-            user.userSettings.exchanges.mapNotNull { name -> bundleSearch.exchanges.find { it.name() == name } },
-            user.userSettings.paymentMethodsAsMap,
+            mapOf(
+                false to mapOf(
+                    false to makeWrapper(user.userSettings.getSearchSettings(false, false)),
+                    true to makeWrapper(user.userSettings.getSearchSettings(false, true))
+                ),
+                true to mapOf(
+                    false to makeWrapper(user.userSettings.getSearchSettings(true, false)),
+                    true to makeWrapper(user.userSettings.getSearchSettings(true, true))
+                )
+            ),
+
             user.userSettings.useSpot,
             user.userSettings.tradingMode,
             user.userSettings.banned,

@@ -18,7 +18,7 @@ class WorkValueDialog() : Dialog {
     lateinit var commandService: CommandService
 
     lateinit var currency: Currency
-    override fun start(user: BotUser) {
+    override fun start(user: BotUser, args: List<String>) {
         user.sendMessageWithBackButton(buildString {
             append("\uD83D\uDCB0 Рабочий объем [<b>${user.serviceUser.userSettings.workValue} usdt</b>]\n")
             append("Если нижний лимит связки меньше рабочего объема, связка показываться <b>не</b> будет\n")

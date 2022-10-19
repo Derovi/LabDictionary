@@ -3,10 +3,7 @@ package by.derovi.botp2p.services
 import by.derovi.botp2p.Bot
 import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.commands.SpotCommand
-import by.derovi.botp2p.exchange.TradingMode
-import by.derovi.botp2p.exchange.Currency
-import by.derovi.botp2p.exchange.PaymentMethod
-import by.derovi.botp2p.exchange.Token
+import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.exchange.exchanges.Binance
 import by.derovi.botp2p.exchange.exchanges.Huobi
 import by.derovi.botp2p.model.*
@@ -20,6 +17,9 @@ class UserService {
     lateinit var userRepository: UserRepository
 
     @Autowired
+    lateinit var searchSettingsRepository: SearchSettingsRepository
+
+    @Autowired
     lateinit var context: ApplicationContext
 
     @Autowired
@@ -27,22 +27,46 @@ class UserService {
 
     val userIdToLastAction = mutableMapOf<Long, Long>()
 
+    fun createDefaultSearchSettings(): SearchSettings {
+        val searchSettings = SearchSettings(
+            0,
+            Token.values().toMutableList(),
+            context.getBean(BundleSearch::class.java).commonExchanges.map(Exchange::name).toMutableList(),
+            mutableListOf(
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.TINKOFF),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.CITIBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.ROSSELHOZBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.POSTBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.RAIFAIZEN),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.URALSIB),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.ROSBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.GAZPROMBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.ALFA_BANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.SBERBANK),
+                CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.CITIBANK)
+            )
+        )
+        searchSettingsRepository.save(searchSettings)
+        return searchSettings
+    }
+
     fun defaultSettings() = UserSettings(
-        0.15,
-        false,
+        1.0,
+        true,
         TradingMode.TAKER_TAKER,
-        mutableListOf(Token.USDT),
-        mutableListOf(Huobi.name(), Binance.name()),
-        mutableListOf(
-            CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.TINKOFF),
-            CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.SBERBANK),
-            CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.CITIBANK)
-        ),
         null,
         50,
         5000,
         mutableListOf(),
         null,
+        SettingsMode.STANDARD,
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
     )
 
     fun syncUser(userId: Long, login: String?, chatId: Long): ServiceUser = userRepository.findById(userId).orElseGet {

@@ -1,8 +1,11 @@
 package by.derovi.botp2p.dialogs
 
 import by.derovi.botp2p.BotUser
+import by.derovi.botp2p.commands.SearchSettingsCommand
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
+import by.derovi.botp2p.model.SearchSettings
+import by.derovi.botp2p.model.SearchSettingsRepository
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -17,6 +20,9 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     lateinit var bundleSearch: BundleSearch
 
     @Autowired
+    lateinit var searchSettingsRepository: SearchSettingsRepository
+
+    @Autowired
     lateinit var commandService: CommandService
 
     enum class State {
@@ -24,7 +30,11 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     }
 
     lateinit var currency: Currency
-    override fun start(user: BotUser) {
+    lateinit var searchSettings: SearchSettings
+
+    override fun start(user: BotUser, args: List<String>) {
+        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+
         user.sendMessage(
             buildString {
                 append("\uD83D\uDCB3️ Карточки\n")
@@ -50,7 +60,7 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
             user.sendMessageWithBackButton(
                 with(StringBuilder()) {
                     append("\uD83D\uDCB3 Карточки <b>${currency.name}</b>\n")
-                    val currentPaymentMethods = user.serviceUser.userSettings.paymentMethodsAsMap[currency]?.sortedBy { it.name }
+                    val currentPaymentMethods = searchSettings.paymentMethodsAsMap[currency]?.sortedBy { it.name }
                     val availablePaymentMethods = PaymentMethod.values().sortedBy { it.name }
                     if (currentPaymentMethods != null && currentPaymentMethods.isNotEmpty()) {
                         append("Установлены: <code>${
@@ -81,9 +91,10 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
             }
             user.sendMessage("\uD83D\uDCB3 Для <b>$currency</b> установлены" +
                     " [<code>${newPaymentMethods.distinct().joinToString(", ")}</code>]")
-            user.serviceUser.userSettings.paymentMethods.removeIf { it.currency == currency }
-            user.serviceUser.userSettings.paymentMethods
+            searchSettings.paymentMethods.removeIf { it.currency == currency }
+            searchSettings.paymentMethods
                 .addAll(newPaymentMethods.stream().distinct().map { CurrencyAndPaymentMethod(currency, it) }.toList())
+            searchSettingsRepository.save(searchSettings)
             commandService.back(user)
             return false
         }

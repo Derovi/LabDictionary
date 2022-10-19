@@ -23,6 +23,6 @@ class ExchangesCommand : Command {
     lateinit var dialogService: DialogService
 
     override fun use(user: BotUser, vararg args: String) {
-        dialogService.startDialog(user, ExchangesDialog::class.java)
+        dialogService.startDialog(user, ExchangesDialog::class.java, args.toList())
     }
 }

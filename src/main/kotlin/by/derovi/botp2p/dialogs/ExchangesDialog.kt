@@ -1,9 +1,12 @@
 package by.derovi.botp2p.dialogs
 
 import by.derovi.botp2p.BotUser
+import by.derovi.botp2p.commands.SearchSettingsCommand
 import by.derovi.botp2p.exchange.BundleSearch
 import by.derovi.botp2p.exchange.Exchange
 import by.derovi.botp2p.exchange.Token
+import by.derovi.botp2p.model.SearchSettings
+import by.derovi.botp2p.model.SearchSettingsRepository
 import by.derovi.botp2p.services.ButtonsService
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,14 +22,21 @@ class ExchangesDialog : Dialog {
     lateinit var bundleSearch: BundleSearch
 
     @Autowired
+    lateinit var searchSettingsRepository: SearchSettingsRepository
+
+    @Autowired
     lateinit var commandService: CommandService
 
     @Autowired
     lateinit var buttonsService: ButtonsService
 
-    override fun start(user: BotUser) {
-        val exchanges = bundleSearch.exchanges.map(Exchange::name)
-        val chosenExchanges = exchanges.filter { it in user.serviceUser.userSettings.exchanges }
+    lateinit var searchSettings: SearchSettings
+
+    override fun start(user: BotUser, args: List<String>) {
+        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+
+        val exchanges = bundleSearch.commonExchanges.map(Exchange::name)
+        val chosenExchanges = exchanges.filter { it in searchSettings.exchanges }
         user.sendMessageWithBackButton(
             buildString {
                 append("\uD83D\uDCB1 Биржи\n")
@@ -42,10 +52,10 @@ class ExchangesDialog : Dialog {
 
     override fun update(user: BotUser): Boolean {
         val text = user.message
-        val currentExchanges = user.serviceUser.userSettings.exchanges
+        val currentExchanges = searchSettings.exchanges
         val inputExchanges = text.split(Regex("[^a-zA-Z0-9]+"))
 
-        val availableExchanges = bundleSearch.exchanges.map(Exchange::name)
+        val availableExchanges = bundleSearch.commonExchanges.map(Exchange::name)
         val newExchanges = mutableListOf<String>()
         for (exchangeName in inputExchanges) {
             val exchange = availableExchanges.find { it.equals(exchangeName, ignoreCase = true) }
@@ -57,7 +67,8 @@ class ExchangesDialog : Dialog {
                 return false
             }
         }
-        user.serviceUser.userSettings.exchanges = newExchanges
+        searchSettings.exchanges = newExchanges
+        searchSettingsRepository.save(searchSettings)
         user.sendMessage("\uD83E\uDE99 Установлены биржи " +
                 "[<code>${newExchanges.joinToString(", ")}</code>]")
         commandService.back(user)

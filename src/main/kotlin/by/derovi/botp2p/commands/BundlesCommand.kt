@@ -113,34 +113,34 @@ class BundlesCommand : Command {
                 }
                 keyboardRow(columns)
 
-                val availableCurrencies = user.serviceUser.userSettings.paymentMethods
-                    .map(CurrencyAndPaymentMethod::currency)
-                    .distinct()
+//                val availableCurrencies = user.serviceUser.userSettings.paymentMethods
+//                    .map(CurrencyAndPaymentMethod::currency)
+//                    .distinct()
 
                 val chosenCurrency = user.serviceUser.userSettings.chosenCurrency
-                if (availableCurrencies.size > 1
-                    || (chosenCurrency != null && chosenCurrency != availableCurrencies.first())) {
-                    keyboardRow(with(mutableListOf<InlineKeyboardButton>()) {
-                        add(
-                            InlineKeyboardButton
-                                .builder()
-                                .text("Все" + if (chosenCurrency == null) " ✓" else "")
-                                .callbackData("/chooseCurrency")
-                                .build()
-                        )
-
-                        for (currency in availableCurrencies) {
-                            add(
-                                InlineKeyboardButton
-                                    .builder()
-                                    .text(currency.name + if (chosenCurrency == currency) " ✓" else "")
-                                    .callbackData("/chooseCurrency?${currency.name}")
-                                    .build()
-                            )
-                        }
-                        this
-                    })
-                }
+//                if (availableCurrencies.size > 1
+//                    || (chosenCurrency != null && chosenCurrency != availableCurrencies.first())) {
+//                    keyboardRow(with(mutableListOf<InlineKeyboardButton>()) {
+//                        add(
+//                            InlineKeyboardButton
+//                                .builder()
+//                                .text("Все" + if (chosenCurrency == null) " ✓" else "")
+//                                .callbackData("/chooseCurrency")
+//                                .build()
+//                        )
+//
+//                        for (currency in availableCurrencies) {
+//                            add(
+//                                InlineKeyboardButton
+//                                    .builder()
+//                                    .text(currency.name + if (chosenCurrency == currency) " ✓" else "")
+//                                    .callbackData("/chooseCurrency?${currency.name}")
+//                                    .build()
+//                            )
+//                        }
+//                        this
+//                    })
+//                }
                 keyboardRow(mutableListOf(buttonsService.modeButton(user.serviceUser.userSettings)))
                 keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("↩️ Главное меню").callbackData("/start").build()))
                 build()

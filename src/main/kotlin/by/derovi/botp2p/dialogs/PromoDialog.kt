@@ -25,7 +25,7 @@ class PromoDialog : Dialog {
     @Autowired
     lateinit var userRepository: UserRepository
 
-    override fun start(user: BotUser) {
+    override fun start(user: BotUser, args: List<String>) {
         user.sendMessage("Введите промокод:")
     }
 

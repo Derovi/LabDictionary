@@ -21,16 +21,16 @@ class DialogService {
 
     fun <T : Dialog> createDialogObject(dialogClass: Class<T>) = applicationContext.getBean(dialogClass)
 
-    fun startDialog(user: BotUser, dialogClass: Class<out Dialog>) {
-        startDialog(user, applicationContext.getBean(dialogClass))
+    fun startDialog(user: BotUser, dialogClass: Class<out Dialog>, args: List<String> = listOf()) {
+        startDialog(user, applicationContext.getBean(dialogClass), args)
     }
 
-    fun startDialog(user: BotUser, dialog: Dialog) {
+    fun startDialog(user: BotUser, dialog: Dialog, args: List<String> = listOf()) {
         if (userIDToDialog.contains(user.id)) {
             stopDialog(user)
         }
         userIDToDialog[user.id] = dialog
-        dialog.start(user)
+        dialog.start(user, args)
     }
 
     fun continueDialog(user: BotUser) {

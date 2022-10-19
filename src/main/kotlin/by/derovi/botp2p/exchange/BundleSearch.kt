@@ -3,16 +3,18 @@ package by.derovi.botp2p.exchange
 import by.derovi.botp2p.exchange.exchanges.Binance
 import by.derovi.botp2p.library.PoolWithRetries
 import by.derovi.botp2p.model.Maker
+import by.derovi.botp2p.model.SearchSettings
 import by.derovi.botp2p.pairs
 import by.derovi.botp2p.services.FeesService
 import by.derovi.botp2p.services.SpotService
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.concurrent.ConcurrentHashMap
+import java.util.stream.Collectors
 import kotlin.math.min
 
 const val OFFERS_LIMIT_FOR_BUNDLE = 5
 
-class BundleSearch(val exchanges: Array<Exchange>) {
+class BundleSearch(val commonExchanges: Array<Exchange>) {
     @Autowired
     lateinit var spotService: SpotService
 
@@ -27,7 +29,7 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         val newSetupToOffers = ConcurrentHashMap<Setup, MutableList<Offer>>()
         // fetch
         val pool = PoolWithRetries(15)
-        exchanges.asSequence().map(Exchange::getFetchTasks).flatten().map {{
+        commonExchanges.asSequence().map(Exchange::getFetchTasks).flatten().map {{
             it().forEach { (setup, offers) ->
                 newSetupToOffers.getOrPut(setup) { mutableListOf() }
                     .addAll(offers.filter { it.completeRate == null || it.completeRate > 49 })
@@ -55,6 +57,7 @@ class BundleSearch(val exchanges: Array<Exchange>) {
     }
 
     fun offersWithRestrictions(
+        searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
         token: Token,
         currency: Currency,
         exchange: Exchange,
@@ -64,6 +67,16 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         minValue: Int,
         workValue: Int,
     ): Pair<List<Offer>, List<Offer>> {
+        fun checkRestrictions(
+            buy: Boolean,
+            taker: Boolean,
+            paymentMethod: PaymentMethod
+        ) = with(searchSettingsMap[buy]!![taker]!!) {
+            exchanges.contains(exchange) &&
+            tokens.contains(token) &&
+            paymentMethods[currency]?.contains(paymentMethod) == true
+        }
+
         val buyOffers = mutableListOf<Offer>()
         val sellOffers = mutableListOf<Offer>()
 
@@ -75,19 +88,27 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         val currentPaymentMethods = paymentMethods.getOrDefault(currency, listOf())
         for (paymentMethod in currentPaymentMethods) {
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.BUY)]?.filter(::criteria)?.let {
-                buyOffers.addAll(it)
+                if (checkRestrictions(true, true, paymentMethod)) {
+                    buyOffers.addAll(it) // buy taker
+                }
                 if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
-                    sellOffers.add(it.first())
+                    if (checkRestrictions(false, false, paymentMethod)) {
+                        sellOffers.add(it.first()) // sell maker
+                    }
                 }
             }
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
                 if (tradingMode == TradingMode.MAKER_MAKER_BINANCE_MERCHANT
                     || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
                     if (it.isNotEmpty()) {
-                        buyOffers.add(it.first())
+                        if (checkRestrictions(true, false, paymentMethod)) {
+                            buyOffers.add(it.first()) // buy maker
+                        }
                     }
                 }
-                sellOffers.addAll(it)
+                if (checkRestrictions(false, true, paymentMethod)) {
+                    sellOffers.addAll(it) // sell taker
+                }
             }
         }
 
@@ -96,10 +117,28 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         return buyOffers to sellOffers
     }
 
+    fun <O, T, R> merge(
+        originMap: Map<Boolean, Map<Boolean, O>>,
+        setExtractor: (O) -> Set<T>,
+        converter: (Set<T>) -> R
+    ): R {
+        fun getOrEmpty(buy: Boolean, taker: Boolean) = originMap[buy]?.get(taker)?.let(setExtractor) ?: emptySet()
+        return converter(
+            getOrEmpty(false, false) union
+            getOrEmpty(false, true) union
+            getOrEmpty(true, false) union
+            getOrEmpty(true, true)
+        )
+    }
+
+    class SearchSettingsWrapper(
+        val tokens: List<Token>,
+        val exchanges: List<Exchange>,
+        val paymentMethodsAsMap: Map<Currency, List<PaymentMethod>>
+    )
+
     fun searchBundles(
-        tokens: List<Token>,
-        exchanges: List<Exchange>,
-        paymentMethods: Map<Currency, List<PaymentMethod>>,
+        searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
         useSpot: Boolean,
         tradingMode: TradingMode,
         bannedMakers: List<Maker>,
@@ -113,10 +152,30 @@ class BundleSearch(val exchanges: Array<Exchange>) {
         val ketToBuyOffers = mutableMapOf<Key, List<Offer>>()
         val keyToSellOffers = mutableMapOf<Key, List<Offer>>()
 
+        val paymentMethods = merge(
+            searchSettingsMap,
+            { it.paymentMethodsAsMap.entries },
+            { it.stream().collect(Collectors.toMap(
+                Map.Entry<Currency, List<PaymentMethod>>::key,
+                Map.Entry<Currency, List<PaymentMethod>>::value)
+            ) }
+        )
+        val exchanges = merge(
+            searchSettingsMap,
+            { it.exchanges.toSet() },
+            { it.toList() }
+        )
+        val tokens = merge(
+            searchSettingsMap,
+            { it.tokens.toSet() },
+            { it.toList() }
+        )
+
         for (currency in paymentMethods.keys) {
             for (exchange in exchanges) {
                 for (token in tokens) {
                     val offers = offersWithRestrictions(
+                        searchSettingsMap,
                         token,
                         currency,
                         exchange,

@@ -40,7 +40,7 @@ class SubscribeDialog(var state: State = State.USERNAME) : Dialog {
 
     var userId: Long? = null
     lateinit var role: Role
-    override fun start(user: BotUser) {}
+    override fun start(user: BotUser, args: List<String>) {}
 
     override fun update(user: BotUser): Boolean {
        if (state == State.USERNAME) {

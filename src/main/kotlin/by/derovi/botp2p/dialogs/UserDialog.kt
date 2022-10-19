@@ -23,7 +23,7 @@ class UserDialog : Dialog {
 
     @Autowired
     lateinit var userRepository: UserRepository
-    override fun start(user: BotUser) {}
+    override fun start(user: BotUser, args: List<String>) {}
 
     override fun update(user: BotUser): Boolean {
         val id = user.message.toLongOrNull()
