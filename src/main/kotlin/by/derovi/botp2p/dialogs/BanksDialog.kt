@@ -72,7 +72,7 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
                     }
                     append("Доступны: <code>${availablePaymentMethods.map(PaymentMethod::name)
                         .joinToString(", ")}</code>\n")
-                    append("<i>Введите биржи через запятую</i>")
+                    append("<i>Введите банки через запятую</i>")
                     toString()
                 }
             )

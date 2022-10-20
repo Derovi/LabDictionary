@@ -40,9 +40,9 @@ class TariffsCommand : Command {
                     val promoPrice = promoPrices?.get(role)?.get(duration) ?: price
                     append("").append(duration.readableName).append(" - ")
                     if (price != promoPrice) {
-                        append("<s>$price</s> <i>$promoPrice usdt</i>\n")
+                        append("<s>$price</s> <b>$promoPrice usdt</b>\n")
                     } else {
-                        append("<i>$promoPrice usdt</i>\n")
+                        append("<b>$promoPrice usdt</b>\n")
                     }
                 }
                 append("\n")

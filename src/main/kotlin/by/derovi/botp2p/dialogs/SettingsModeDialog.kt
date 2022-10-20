@@ -31,7 +31,7 @@ class SettingsModeDialog : Dialog {
 
         user.sendMessage(
             with(StringBuilder()) {
-                append("\uD83D\uDC65 Изменить режим настроек\n")
+                append("⚙ Изменить режим настроек\n")
                 SettingsMode.values().forEach {
                     if (user.serviceUser.userSettings.settingsMode == it) {
                         append("<b>✓ </b>")

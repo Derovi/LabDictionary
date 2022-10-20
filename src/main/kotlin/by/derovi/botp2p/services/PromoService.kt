@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 import kotlin.math.ceil
 import kotlin.random.Random
@@ -27,16 +26,22 @@ class PromoService {
     @Autowired
     lateinit var userService: UserService
 
-    val referReward = 0.1
-    val referDiscount = 0.2
+    val referReward = 0.2
+    val referDiscount = 0.0
     fun getPromo(id: String): Promo? = promoRepository.findById(id).orElse(null)
 
     val prices = mapOf(
         Role.STANDARD to mapOf(
-            SubscriptionDuration.WEEK to 30,
-            SubscriptionDuration.MONTH to 100,
-            SubscriptionDuration.SEASON to 200,
-            SubscriptionDuration.YEAR to 300
+            SubscriptionDuration.WEEK to 69,
+            SubscriptionDuration.MONTH to 139,
+            SubscriptionDuration.SEASON to 279,
+            SubscriptionDuration.YEAR to 837
+        ),
+        Role.ADVANCED to mapOf(
+            SubscriptionDuration.WEEK to 79,
+            SubscriptionDuration.MONTH to 159,
+            SubscriptionDuration.SEASON to 319,
+            SubscriptionDuration.YEAR to 957
         )
     )
 
