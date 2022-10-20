@@ -32,16 +32,18 @@ class PromoService {
 
     val prices = mapOf(
         Role.STANDARD to mapOf(
-            SubscriptionDuration.WEEK to 69,
-            SubscriptionDuration.MONTH to 139,
-            SubscriptionDuration.SEASON to 279,
-            SubscriptionDuration.YEAR to 837
+            SubscriptionDuration.WEEK to 49,
+            SubscriptionDuration.MONTH to 149,
+            SubscriptionDuration.SEASON to 379,
+            SubscriptionDuration.HALF_YEAR to 669,
+            SubscriptionDuration.YEAR to 1069
         ),
         Role.ADVANCED to mapOf(
-            SubscriptionDuration.WEEK to 79,
-            SubscriptionDuration.MONTH to 159,
-            SubscriptionDuration.SEASON to 319,
-            SubscriptionDuration.YEAR to 957
+            SubscriptionDuration.WEEK to 59,
+            SubscriptionDuration.MONTH to 179,
+            SubscriptionDuration.SEASON to 459,
+            SubscriptionDuration.HALF_YEAR to 799,
+            SubscriptionDuration.YEAR to 1279
         )
     )
 

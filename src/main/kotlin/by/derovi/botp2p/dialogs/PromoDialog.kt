@@ -37,8 +37,11 @@ class PromoDialog : Dialog {
             return true
         }
         user.serviceUser.promo = promo
-        user.sendMessage(
-            "Вы использовали промокод <b>${promo.id}</b> на <b>${(promo.discount * 100).toInt()}%</b>")
+        if (promo.discount > 0) {
+            user.sendMessage(
+                "Вы использовали промокод <b>${promo.id}</b> на <b>${(promo.discount * 100).toInt()}%</b>"
+            )
+        }
         commandService.back(user)
         return true
     }

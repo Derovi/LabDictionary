@@ -14,11 +14,11 @@ class StartCommand : Command {
     override fun use(user: BotUser, vararg args: String) {
         user.sendMessage(
             buildString {
-                append("<b>====================== Меню =====================</b>\n")
-                append("<b>/bundles</b> - Получить список связок\n")
-                append("<b>/settings</b> - Изменить настройки\n")
-                append("<b>/guide</b> - Получить информацию\n")
-                append("<b>/subscription</b> - Информация о вашей подписке\n")
+                append("<b>DEROVI p2p BOT</b> — ")
+                append("Твой помощник в поиске самых лучших связок и больших спредов\n")
+                append("\n")
+                append("Краткий обзор: https://www.youtube.com/watch?v=dQw4w9WgXcQ\n")
+                append("Полная инструкция: https://www.youtube.com/watch?v=dQw4w9WgXcQ\n")
                 toString()
             },
             with(InlineKeyboardMarkup.builder()) {

@@ -58,7 +58,7 @@ class TariffsCommand : Command {
                 val promo = user.serviceUser.promo
                 val promoPrices = if (promo != null) promoService.pricesWithPromo(promo.discount) else null
                 append(tariffsDescription(prices, promoPrices, tariffs))
-                if (promo != null) {
+                if (promo != null && promo.discount > 0) {
                     append("У вас действует скидка " +
                             "<b>${PromoService.percentToReadable(promo.discount)}</b>")
                 }

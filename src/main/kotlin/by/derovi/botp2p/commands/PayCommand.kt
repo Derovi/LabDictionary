@@ -76,6 +76,7 @@ class PayCommand : Command {
                     duration
                 )
                 append("<code>${ticket.address}</code>\n")
+
                 append("После оплаты нажмите кнопку Я ОПЛАТИЛ\n")
                 append("Поддержка: @derovi")
                 toString()

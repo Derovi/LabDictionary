@@ -7,6 +7,7 @@ enum class SubscriptionDuration(val days: Int, val readableName: String) {
     },
     MONTH(30, "Месяц"),
     SEASON(90, "3 Месяца"),
+    HALF_YEAR(180, "6 Месяцев"),
     YEAR(365, "Год");
 
     open val readableName2

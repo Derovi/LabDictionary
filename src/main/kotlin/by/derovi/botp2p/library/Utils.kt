@@ -14,7 +14,7 @@ object Utils {
 
     fun normalizeSpread(value: Double) = max(0.0, round(value * 10000).toInt() / 100.0)
 
-    fun formatNumber(value: Double) = max(0.0, round(value * 10).toInt() / 10.0)
+    fun formatNumber(value: Double) = max(0.0, (value * 100).toInt() / 100.0)
     fun formatDate(millis: Long) = SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date(millis))
 
     fun createLink(text: String, link: String) = "<a href='$link'>$text</a>"

@@ -4,9 +4,11 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.library.Utils
 import by.derovi.botp2p.model.Role
 import by.derovi.botp2p.services.ButtonsService
+import by.derovi.botp2p.services.CommandService
 import by.derovi.botp2p.services.DialogService
 import by.derovi.botp2p.services.PromoService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
@@ -25,8 +27,18 @@ class SubscriptionCommand : Command {
     @Autowired
     lateinit var buttonsService: ButtonsService
 
+    @Autowired
+    lateinit var context: ApplicationContext
+
     override fun use(user: BotUser, vararg args: String) {
         val role = user.serviceUser.role
+
+        if (role == Role.UNSUBSCRIBED && user.serviceUser.referPromo == null) {
+            val commandService = context.getBean(CommandService::class.java)
+            commandService.backImplicit(user)
+            commandService.use("/tariffs", user)
+            return
+        }
 
         user.sendMessage(
             with(StringBuilder()) {
@@ -40,19 +52,23 @@ class SubscriptionCommand : Command {
                 )
                 append("\n")
                 val promo = user.serviceUser.promo
-                if (promo != null) {
+                if (promo != null && promo.discount > 0) {
                     append("Ваша скидка: <b>${PromoService.percentToReadable(promo.discount)}</b>\n")
                 }
                 val referPromo = user.serviceUser.referPromo
                 if (referPromo != null) {
                     append("Бонус от патрнеров: <b>${user.serviceUser.referBonus}$</b>\n")
-                    append("Количество партрнеров: <b>${user.serviceUser.referNumber}</b>\n")
-                    append("Ваш реферальный промокод: <code>${referPromo.id}</code>\n")
+                    append("Количество партнеров: <b>${user.serviceUser.referNumber}</b>\n")
+//                    append("Ваш реферальный промокод: <code>${referPromo.id}</code>\n")
                     append("Ваша реферальная ссылка: ${Utils.createCommandLinkNoEncode("promo${referPromo.id}")}\n")
 
-                    append("<i>Каждый, кто укажет этот промокод, получит скидку " +
-                            "<b>${PromoService.percentToReadable(referPromo.discount)}</b>, " +
-                            "а вы получите <b>${PromoService.percentToReadable(promoService.referReward)}</b> " +
+//                    append("<i>Каждый, кто укажет этот промокод, получит скидку " +
+//                            "<b>${PromoService.percentToReadable(referPromo.discount)}</b>, " +
+//                            "а вы получите <b>${PromoService.percentToReadable(promoService.referReward)}</b> " +
+//                            "от его оплаты в качестве бонуса!</i>\n")
+
+                    append("<i>За каждого приглашенного реферала " +
+                            "вы получите <b>${PromoService.percentToReadable(promoService.referReward)}</b> " +
                             "от его оплаты в качестве бонуса!</i>\n")
                 }
                 toString()
@@ -74,13 +90,13 @@ class SubscriptionCommand : Command {
                         .callbackData("/tariffs")
                         .build()
                 ))
-                keyboardRow(mutableListOf(
-                    InlineKeyboardButton
-                        .builder()
-                        .text("У меня есть промокод")
-                        .callbackData("/promo")
-                        .build()
-                ))
+//                keyboardRow(mutableListOf(
+//                    InlineKeyboardButton
+//                        .builder()
+//                        .text("У меня есть промокод")
+//                        .callbackData("/promo")
+//                        .build()
+//                ))
                 keyboardRow(mutableListOf(buttonsService.backButton()))
                 build()
             }

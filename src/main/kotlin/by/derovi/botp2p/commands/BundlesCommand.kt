@@ -36,7 +36,6 @@ class BundlesCommand : Command {
     override val role = Role.STANDARD
 
     override fun use(user: BotUser, vararg args: String) {
-        val commandService = context.getBean(CommandService::class.java)
 
         val ttOnly = args.getOrNull(1)?.toBooleanStrictOrNull() ?: false
         val showFull = args.getOrNull(2)?.toBooleanStrictOrNull() ?: false

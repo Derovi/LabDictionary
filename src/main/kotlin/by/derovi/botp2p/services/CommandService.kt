@@ -36,6 +36,10 @@ class CommandService {
         use(lastCommand(botUser), botUser, false)
     }
 
+    fun backImplicit(botUser: BotUser, number: Int = 1) {
+        repeat(number) { userToCommandStack[botUser.id]?.removeLastOrNull() }
+    }
+
     fun lastCommand(botUser: BotUser) = userToCommandStack[botUser.id]?.lastOrNull() ?: "/start"
 
     fun use(command: String, args: Array<String>, botUser: BotUser, addToStack: Boolean = true) {

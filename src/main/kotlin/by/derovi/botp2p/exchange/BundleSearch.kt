@@ -156,7 +156,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                 }
                 if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
                     if (checkRestrictions(false, false, paymentMethod)) {
-                        sellOffersMaker.addAll(it.take(3)) // sell maker
+                        sellOffersMaker.addAll(it.take(1)) // sell maker
                     }
                 }
             }
@@ -165,7 +165,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                     || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
                     if (it.isNotEmpty()) {
                         if (checkRestrictions(true, false, paymentMethod)) {
-                            buyOffersMaker.addAll(it.take(3)) // buy maker
+                            buyOffersMaker.addAll(it.take(1)) // buy maker
                         }
                     }
                 }

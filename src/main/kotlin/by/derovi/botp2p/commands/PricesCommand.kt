@@ -37,7 +37,7 @@ class PricesCommand : Command {
     fun Offer.usdtPrice() = this.price / spotService.price(this.token)
 
     override val name = "/prices"
-    override val role = Role.STANDARD
+    override val role = Role.ADVANCED
 
     fun url(showFull: Boolean, buy: Boolean, taker: Boolean) =
         "/prices?$showFull&$buy&$taker"
