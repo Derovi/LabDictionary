@@ -56,6 +56,67 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         setupToOffers = newSetupToOffers
     }
 
+//    fun offersWithRestrictions(
+//        searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
+//        token: Token,
+//        currency: Currency,
+//        exchange: Exchange,
+//        paymentMethods: Map<Currency, List<PaymentMethod>>,
+//        tradingMode: TradingMode,
+//        bannedMakers: List<Maker>,
+//        minValue: Int,
+//        workValue: Int,
+//    ): Pair<List<Offer>, List<Offer>> {
+//        fun checkRestrictions(
+//            buy: Boolean,
+//            taker: Boolean,
+//            paymentMethod: PaymentMethod
+//        ) = with(searchSettingsMap[buy]!![taker]!!) {
+//            exchanges.contains(exchange) &&
+//            tokens.contains(token) &&
+//            paymentMethods[currency]?.contains(paymentMethod) == true
+//        }
+//
+//        val buyOffers = mutableListOf<Offer>()
+//        val sellOffers = mutableListOf<Offer>()
+//
+//        fun criteria(offer: Offer) =
+//            spotService.getUSDTAmount(offer.maxLimit, token, offer.price) >= minValue
+//            &&spotService.getUSDTAmount( offer.minLimit, token, offer.price) <= workValue
+//            && !bannedMakers.contains(Maker(offer.username, offer.exchange!!.name()))
+//
+//        val currentPaymentMethods = paymentMethods.getOrDefault(currency, listOf())
+//        for (paymentMethod in currentPaymentMethods) {
+//            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.BUY)]?.filter(::criteria)?.let {
+//                if (checkRestrictions(true, true, paymentMethod)) {
+//                    buyOffers.addAll(it) // buy taker
+//                }
+//                if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
+//                    if (checkRestrictions(false, false, paymentMethod)) {
+//                        sellOffers.add(it.first()) // sell maker
+//                    }
+//                }
+//            }
+//            setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
+//                if (tradingMode == TradingMode.MAKER_MAKER_BINANCE_MERCHANT
+//                    || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
+//                    if (it.isNotEmpty()) {
+//                        if (checkRestrictions(true, false, paymentMethod)) {
+//                            buyOffers.add(it.first()) // buy maker
+//                        }
+//                    }
+//                }
+//                if (checkRestrictions(false, true, paymentMethod)) {
+//                    sellOffers.addAll(it) // sell taker
+//                }
+//            }
+//        }
+//
+//        buyOffers.sortBy { it.price }
+//        sellOffers.sortByDescending { it.price }
+//        return buyOffers to sellOffers
+//    }
+
     fun offersWithRestrictions(
         searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
         token: Token,
@@ -73,27 +134,29 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             paymentMethod: PaymentMethod
         ) = with(searchSettingsMap[buy]!![taker]!!) {
             exchanges.contains(exchange) &&
-            tokens.contains(token) &&
-            paymentMethods[currency]?.contains(paymentMethod) == true
+                    tokens.contains(token) &&
+                    paymentMethods[currency]?.contains(paymentMethod) == true
         }
 
-        val buyOffers = mutableListOf<Offer>()
-        val sellOffers = mutableListOf<Offer>()
+        val buyOffersTaker = mutableListOf<Offer>()
+        val buyOffersMaker = mutableListOf<Offer>()
+        val sellOffersTaker = mutableListOf<Offer>()
+        val sellOffersMaker = mutableListOf<Offer>()
 
         fun criteria(offer: Offer) =
             spotService.getUSDTAmount(offer.maxLimit, token, offer.price) >= minValue
-            &&spotService.getUSDTAmount( offer.minLimit, token, offer.price) <= workValue
-            && !bannedMakers.contains(Maker(offer.username, offer.exchange!!.name()))
+                    &&spotService.getUSDTAmount( offer.minLimit, token, offer.price) <= workValue
+                    && !bannedMakers.contains(Maker(offer.username, offer.exchange!!.name()))
 
         val currentPaymentMethods = paymentMethods.getOrDefault(currency, listOf())
         for (paymentMethod in currentPaymentMethods) {
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.BUY)]?.filter(::criteria)?.let {
                 if (checkRestrictions(true, true, paymentMethod)) {
-                    buyOffers.addAll(it) // buy taker
+                    buyOffersTaker.addAll(it) // buy taker
                 }
                 if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
                     if (checkRestrictions(false, false, paymentMethod)) {
-                        sellOffers.add(it.first()) // sell maker
+                        sellOffersMaker.addAll(it.take(3)) // sell maker
                     }
                 }
             }
@@ -102,19 +165,26 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                     || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
                     if (it.isNotEmpty()) {
                         if (checkRestrictions(true, false, paymentMethod)) {
-                            buyOffers.add(it.first()) // buy maker
+                            buyOffersMaker.addAll(it.take(3)) // buy maker
                         }
                     }
                 }
                 if (checkRestrictions(false, true, paymentMethod)) {
-                    sellOffers.addAll(it) // sell taker
+                    sellOffersTaker.addAll(it) // sell taker
                 }
             }
         }
 
-        buyOffers.sortBy { it.price }
-        sellOffers.sortByDescending { it.price }
-        return buyOffers to sellOffers
+        buyOffersTaker.sortBy { it.price }
+        sellOffersTaker.sortByDescending { it.price }
+        buyOffersMaker.sortByDescending { it.price }
+        sellOffersMaker.sortBy { it.price }
+        //merge
+
+        return ((if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.TAKER_MAKER)
+            buyOffersTaker else buyOffersMaker)
+        to (if (tradingMode == TradingMode.TAKER_TAKER)
+            sellOffersTaker else sellOffersMaker))
     }
 
     fun <O, T, R> merge(
@@ -187,7 +257,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             }
         }
 
-        if (buy) {
+        if (buy && taker || !buy && !taker) {
             offers.sortBy { it.usdtPrice() }
         } else {
             offers.sortByDescending { it.usdtPrice() }
