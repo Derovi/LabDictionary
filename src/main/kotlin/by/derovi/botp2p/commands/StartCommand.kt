@@ -34,7 +34,7 @@ class StartCommand : Command {
                 if (user.isAdmin) {
                     keyboardRow(listOf(
                         InlineKeyboardButton.builder().text("Пользователи").callbackData("/users").build(),
-                        InlineKeyboardButton.builder().text("Найти по id").callbackData("/user").build(),
+                        InlineKeyboardButton.builder().text("Тикеты").callbackData("/tickets").build(),
                         InlineKeyboardButton.builder().text("Подписать").callbackData("/subscribe").build(),
                     ))
                 }

@@ -31,7 +31,6 @@ class PayCommand : Command {
     lateinit var ticketService: TicketsService
 
     override fun use(user: BotUser, vararg args: String) {
-        println("pay command")
         val role = Role.values().filter(Role::isTariff).find { it.name == args[0] } ?: run {
             user.sendMessage("Не найден тариф <b>${args[0]}</b>")
             context.getBean(CommandService::class.java).back(user)
@@ -72,7 +71,6 @@ class PayCommand : Command {
                 append("<code>${ticket.address}</code>\n")
                 append("После оплаты нажмите кнопку Я ОПЛАТИЛ\n")
                 append("Поддержка: @derovi")
-                println("build text")
                 toString()
             },
             with(InlineKeyboardMarkup.builder()) {
@@ -88,7 +86,6 @@ class PayCommand : Command {
                         .callbackData("/cancelPayment")
                         .build()
                 ))
-                println("build markup")
                 build()
             }
         )

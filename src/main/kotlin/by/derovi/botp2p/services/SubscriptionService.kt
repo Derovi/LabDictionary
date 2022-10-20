@@ -57,7 +57,7 @@ class SubscriptionService {
                     referId = id
                 )
                 println(promo.id)
-                it.referPromo = promo
+//                it.referPromo = promo
             }
             userRepository.save(it)
         }

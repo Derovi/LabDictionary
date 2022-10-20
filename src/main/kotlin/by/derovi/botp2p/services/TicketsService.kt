@@ -28,8 +28,19 @@ class TicketsService {
         return addresses[lastUsedAddressId]
     }
 
-    fun getAllTickets() = ticketRepository.findAll()
+    fun getAllTickets(): List<Ticket> {
+        val rawTickets = ticketRepository.findAll().toMutableList()
+        val tickets = mutableListOf<Ticket>()
+        tickets.addAll(
+            rawTickets.filter { it.approvedByUserAt != null }.sortedBy { it.approvedByUserAt }
+        )
+        tickets.addAll(
+            rawTickets.filter { it.approvedByUserAt == null }.sortedBy { it.createdAt }
+        )
+        return tickets
+    }
     fun getTicket(user: ServiceUser) = ticketRepository.getFirstByUser(user)
+    fun getTicket(ticketId: Long) = ticketRepository.findById(ticketId)
 
     fun approveByUser(ticket: Ticket) {
         ticket.approvedByUserAt = System.currentTimeMillis()
