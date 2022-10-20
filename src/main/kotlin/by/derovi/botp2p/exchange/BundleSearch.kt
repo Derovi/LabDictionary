@@ -137,6 +137,64 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         val paymentMethodsAsMap: Map<Currency, List<PaymentMethod>>
     )
 
+    fun Offer.usdtPrice() = this.price / spotService.price(this.token)
+
+    fun searchBestPrices(
+        searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
+        buy: Boolean,
+        taker: Boolean,
+        bannedMakers: List<Maker>,
+        currency: Currency,
+        minValue: Int,
+        workValue: Int
+    ): List<Offer> {
+        val paymentMethods = merge(
+            searchSettingsMap,
+            { it.paymentMethodsAsMap[currency]?.toSet() ?: emptySet() },
+            { mapOf(currency to it.toList()) }
+        )
+        val exchanges = merge(
+            searchSettingsMap,
+            { it.exchanges.toSet() },
+            { it }
+        )
+        val tokens = merge(
+            searchSettingsMap,
+            { it.tokens.toSet() },
+            { it }
+        )
+
+        val tradingMode = if (taker) TradingMode.TAKER_TAKER else TradingMode.MAKER_MAKER_BINANCE_MERCHANT
+        val offers = mutableListOf<Offer>()
+        for (exchange in exchanges) {
+            for (token in tokens) {
+                val buyAndSellOffers = offersWithRestrictions(
+                    searchSettingsMap,
+                    token,
+                    currency,
+                    exchange,
+                    paymentMethods,
+                    tradingMode,
+                    bannedMakers,
+                    minValue,
+                    workValue
+                )
+                if (buy) {
+                    offers.addAll(buyAndSellOffers.first)
+                } else {
+                    offers.addAll(buyAndSellOffers.second)
+                }
+            }
+        }
+
+        if (buy) {
+            offers.sortBy { it.usdtPrice() }
+        } else {
+            offers.sortByDescending { it.usdtPrice() }
+        }
+        return offers
+    }
+
     fun searchBundles(
         searchSettingsMap: Map<Boolean, Map<Boolean, SearchSettingsWrapper>>,
         useSpot: Boolean,
@@ -205,8 +263,6 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                     var bestSpreadWithFee = Double.NEGATIVE_INFINITY
 
                     lateinit var bestTransferGuide: FeesService.TransferGuide
-
-                    fun Offer.usdtPrice() = this.price / spotService.price(this.token)
 
                     val spreadsWithFee = List(buyOffers.size) { MutableList(sellOffers.size) { 0.0 } }
 

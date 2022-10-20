@@ -43,25 +43,40 @@ class BundlesService {
             && it.sellExchange == bundleKey.sellExchange
         }
 
-    fun searchBundlesForUser(user: ServiceUser) {
-        fun makeWrapper(searchSettings: SearchSettings) = BundleSearch.SearchSettingsWrapper(
-            searchSettings.tokens,
-            searchSettings.exchanges.mapNotNull { name -> bundleSearch.commonExchanges.find { it.name() == name } },
-            searchSettings.paymentMethodsAsMap,
+    fun makeWrapper(searchSettings: SearchSettings) = BundleSearch.SearchSettingsWrapper(
+        searchSettings.tokens,
+        searchSettings.exchanges.mapNotNull { name -> bundleSearch.commonExchanges.find { it.name() == name } },
+        searchSettings.paymentMethodsAsMap,
+    )
+
+    fun searchSettingsMap(user: ServiceUser) = mapOf(
+        false to mapOf(
+            false to makeWrapper(user.userSettings.getSearchSettings(false, false)),
+            true to makeWrapper(user.userSettings.getSearchSettings(false, true))
+        ),
+        true to mapOf(
+            false to makeWrapper(user.userSettings.getSearchSettings(true, false)),
+            true to makeWrapper(user.userSettings.getSearchSettings(true, true))
         )
+    )
 
+    fun searchBestPricesForUser(
+        user: ServiceUser,
+        buy: Boolean,
+        taker: Boolean
+    ) = bundleSearch.searchBestPrices(
+        searchSettingsMap(user),
+        buy,
+        taker,
+        user.userSettings.banned,
+        Currency.RUB,
+        user.userSettings.minimumValue,
+        user.userSettings.workValue
+    )
+
+    fun searchBundlesForUser(user: ServiceUser) {
         val result = bundleSearch.searchBundles(
-            mapOf(
-                false to mapOf(
-                    false to makeWrapper(user.userSettings.getSearchSettings(false, false)),
-                    true to makeWrapper(user.userSettings.getSearchSettings(false, true))
-                ),
-                true to mapOf(
-                    false to makeWrapper(user.userSettings.getSearchSettings(true, false)),
-                    true to makeWrapper(user.userSettings.getSearchSettings(true, true))
-                )
-            ),
-
+            searchSettingsMap(user),
             user.userSettings.useSpot,
             user.userSettings.tradingMode,
             user.userSettings.banned,

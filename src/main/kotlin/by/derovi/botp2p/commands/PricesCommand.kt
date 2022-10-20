@@ -4,6 +4,7 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.library.BundlesPreview
 import by.derovi.botp2p.library.Utils
+import by.derovi.botp2p.library.checkIfSelected
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
 import by.derovi.botp2p.model.Role
 import by.derovi.botp2p.services.*
@@ -30,41 +31,43 @@ class PricesCommand : Command {
     @Autowired
     lateinit var context: ApplicationContext
 
-    companion object {
-        fun bundleKeyToCommandArgs(key: BundleKey) = "${key.currency}" +
-                "&${key.buyToken}" +
-                "&${key.sellToken}" +
-                "&${key.buyExchange.name()}" +
-                "&${key.sellExchange.name()}"
-    }
+    @Autowired
+    lateinit var spotService: SpotService
+
+    fun Offer.usdtPrice() = this.price / spotService.price(this.token)
 
     override val name = "/prices"
     override val role = Role.STANDARD
 
-    override fun use(user: BotUser, vararg args: String) {
-        if (args.size < 5) return
-        val bundleKey = BundleKey(
-            Currency.values().find { it.name == args[0] } ?: return,
-            Token.values().find { it.name == args[1] } ?: return,
-            Token.values().find { it.name == args[2] } ?: return,
-            bundleSearch.commonExchanges.find { it.name() == args[3] } ?: return,
-            bundleSearch.commonExchanges.find { it.name() == args[4] } ?: return
-        )
+    fun url(showFull: Boolean, buy: Boolean, taker: Boolean) =
+        "/prices?$showFull&$buy&$taker"
 
-        val showFull = if (args.size < 6) false else args[5].toBooleanStrictOrNull() ?: false
-        val bundle = bundlesService.findBundle(user.id, bundleKey)
+    override fun use(user: BotUser, vararg args: String) {
+        val showFull = args.firstOrNull()?.toBooleanStrictOrNull() ?: false
+        val buy = args.getOrNull(1)?.toBooleanStrictOrNull() ?: true
+        val taker = args.getOrNull(2)?.toBooleanStrictOrNull() ?: true
+
+        val offers = bundlesService.searchBestPricesForUser(user.serviceUser, buy, taker)
+        val currency = Currency.RUB
+        val limit = if (showFull) 20 else 10
 
         user.sendMessage(buildString {
-                append("\uD83D\uDD0E <b>${bundleKey.currency}</b>, ")
-                append("<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>\n")
-                if (bundle != null) {
-                    if (showFull) {
-                        append(BundlesPreview.fullView(bundle))
-                    } else {
-                        append(BundlesPreview.preview(bundle))
-                    }
-                } else {
-                    append("\nСвязка больше не актуальна! \uD83D\uDE41")
+            append("<b>${if (buy) "Покупка" else "Продажа"}/${if (taker) "Тейкер" else "Мейкер"}, ${currency}</b>, " +
+                    "<i>${Utils.formatDate(bundlesService.lastUpdateTime)}</i>\n")
+
+            append("Показана цена 1 usdt\n")
+                for ((idx, offer) in offers.withIndex().take(limit)) {
+                    append(
+                        "<b>${idx + 1}.</b> " +
+                            "${Utils.formatNumber(offer.usdtPrice())} руб. " +
+                            "${Utils.createLink(offer.username, offer.link)} - " +
+                            "<b>${offer.exchange?.name()}</b>, " +
+                            "<b>${offer.paymentMethod}</b>, " +
+                            "<b>${offer.token}</b> цена: <b>${offer.price} ${currency}</b>, " +
+                            "[лимит ${offer.minLimit} - ${offer.maxLimit} ${currency}]" +
+                            if (offer.completeCount == null) "" else
+                                ", [успешно ${offer.completeCount}, ${offer.completeRate}%]")
+                    append("  ${BundlesPreview.banLink(offer.username, offer.exchange!!.name())}\n")
                 }
                 toString()
             },
@@ -73,25 +76,36 @@ class PricesCommand : Command {
                     InlineKeyboardButton
                         .builder()
                         .text("\uD83D\uDD04 Обновить")
-                        .callbackData("/bundle?false").build()
+                        .callbackData(url(showFull, buy, taker)).build(),
+                    if (!showFull) {
+                        InlineKeyboardButton.builder().text("\uD83D\uDE48 Больше")
+                            .callbackData(url(true, buy, taker)).build()
+                    } else {
+                        InlineKeyboardButton.builder().text("\uD83E\uDDD0 Меньше")
+                            .callbackData(url(false, buy, taker)).build()
+                    }
                 ))
 
-                val columns = mutableListOf<InlineKeyboardButton>()
-
-                val argsStr = bundleKeyToCommandArgs(bundleKey)
-                if (showFull) {
-                    columns.add(InlineKeyboardButton.builder().text("\uD83D\uDE48 Скрыть")
-                        .callbackData("/bundle?$argsStr&false").build())
-                } else {
-                    columns.add(InlineKeyboardButton.builder().text("\uD83E\uDDD0 Подробнее")
-                        .callbackData("/bundle?$argsStr&true").build())
-                }
-
-                columns.add(
-                    InlineKeyboardButton.builder().text("⬆ Другие связки")
-                        .callbackData("/bundles").build()
-                )
-                keyboardRow(columns)
+                keyboardRow(listOf(
+                    InlineKeyboardButton
+                        .builder()
+                        .text("➡ Купить".checkIfSelected(buy, true))
+                        .callbackData(url(showFull, true, taker)).build(),
+                    InlineKeyboardButton
+                        .builder()
+                        .text("⬅️ Продать".checkIfSelected(buy, false))
+                        .callbackData(url(showFull, false, taker)).build(),
+                ))
+                keyboardRow(listOf(
+                    InlineKeyboardButton
+                        .builder()
+                        .text("⬇ Тейкер".checkIfSelected(taker, true))
+                        .callbackData(url(showFull, buy, true)).build(),
+                    InlineKeyboardButton
+                        .builder()
+                        .text("⬆ Мейкер".checkIfSelected(taker, false))
+                        .callbackData(url(showFull, buy, false)).build(),
+                ))
 
                 keyboardRow(mutableListOf(InlineKeyboardButton
                     .builder()

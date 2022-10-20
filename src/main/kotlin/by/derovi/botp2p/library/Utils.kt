@@ -7,11 +7,14 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
+fun <T> String.checkIfSelected(selected: T, other: T) = if (selected == other) "✓ $this" else this
+
 object Utils {
     val base62 = Base62.createInstance()
 
     fun normalizeSpread(value: Double) = max(0.0, round(value * 10000).toInt() / 100.0)
 
+    fun formatNumber(value: Double) = max(0.0, round(value * 10).toInt() / 10.0)
     fun formatDate(millis: Long) = SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date(millis))
 
     fun createLink(text: String, link: String) = "<a href='$link'>$text</a>"
