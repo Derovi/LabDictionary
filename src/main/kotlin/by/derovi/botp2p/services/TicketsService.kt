@@ -15,10 +15,9 @@ class TicketsService {
     lateinit var subscriptionService: SubscriptionService
 
     final val addresses = listOf(
-        "a",
-        "b",
-        "c",
-        "d"
+        "TRK1yWcYAPKhH5XNxJvf2ywKfiHoLd3Vud",
+        "TLFDL27EvQTRTBctaXRYGeU5mARTngbnYo",
+        "TXUjw1opViyFtpXpDAEgqveEKanUEif2oT",
     )
 
     var lastUsedAddressId = Random.nextInt(addresses.size)
@@ -60,8 +59,10 @@ class TicketsService {
 
     fun createTicket(
         user: ServiceUser,
+        promo: Promo?,
         price: Long,
         promoPrice: Long,
+        referBonusUsed: Long,
         role: Role,
         subscriptionDuration: SubscriptionDuration
     ): Ticket {
@@ -70,8 +71,10 @@ class TicketsService {
         val ticket = Ticket(
             0,
             user,
+            promo,
             price,
             promoPrice,
+            referBonusUsed,
             role,
             subscriptionDuration,
             getAddress(),

@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Service
 class SubscriptionService {
@@ -26,40 +27,44 @@ class SubscriptionService {
         if (botUser.serviceUser.role == Role.UNSUBSCRIBED || botUser.serviceUser.role == Role.ADMIN) {
             return
         }
-        if (botUser.serviceUser.subscribedUntil >= System.currentTimeMillis()) {
-            botUser.serviceUser.role = Role.UNSUBSCRIBED
+        if (botUser.serviceUser.subscribedUntil < System.currentTimeMillis()) {
 //            commandService.adjustSettingsAccordingToPermissions(botUser)
             botUser.sendMessage(
-                "<b>Ваша подписка <i>${botUser.serviceUser.role.readableName}</i> закончилась!</b>",
-                InlineKeyboardMarkup.builder().keyboardRow(mutableListOf(InlineKeyboardButton.builder().text("Продлить").callbackData("/subscription").build())).build()
+                "\uD83D\uDCC5 Ваша подписка <b>${botUser.serviceUser.role.readableName}</b> закончилась!",
+                with(InlineKeyboardMarkup.builder()) {
+                    keyboardRow(mutableListOf(InlineKeyboardButton.builder()
+                        .text("\uD83D\uDC49 Продлить")
+                        .callbackData("/subscription").build()))
+                    build()
+                }
             )
+            botUser.serviceUser.role = Role.UNSUBSCRIBED
         }
     }
 
-    @Scheduled(cron = "0 0 */1 * * *")
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     fun updateAllSubscriptions() {
         userRepository.findAll().map { userService.getBotUserById(it.userId) }.forEach(::update)
     }
 
     fun subscribe(id: Long, role: Role, days: Int) {
         val millis = days * 24L * 60 * 60 * 1000
-        userRepository.findById(id).ifPresent {
-            if (it.role == role) {
-                it.subscribedUntil += millis
-            } else {
-                it.role = role
-                it.subscribedUntil = System.currentTimeMillis() + millis
-            }
-            userRepository.save(it)
-            if (it.referPromo == null) {
-                val promo = promoService.createPromo(
-                    promoService.referDiscount,
-                    referId = id
-                )
-                println(promo.id)
-//                it.referPromo = promo
-            }
-            userRepository.save(it)
+        val user = userRepository.findById(id).orElse(null) ?: return
+        if (user.role == role) {
+            user.subscribedUntil += millis
+        } else {
+            user.role = role
+            user.subscribedUntil = System.currentTimeMillis() + millis
         }
+        userRepository.save(user)
+        if (user.referPromo == null) {
+            val promo = promoService.createPromo(
+                promoService.referDiscount,
+                referId = id
+            )
+            println(promo.id)
+            user.referPromo = promo
+        }
+        userRepository.save(user)
     }
 }

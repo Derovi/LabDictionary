@@ -16,7 +16,8 @@ class ServiceUser(
    var login: String?,
    var chatId: Long,
    var referBonus: Long,
-   @OneToOne
+   var referNumber: Long,
+   @OneToOne(cascade = [CascadeType.ALL])
    var referPromo: Promo?,
    @OneToOne
    var promo: Promo?

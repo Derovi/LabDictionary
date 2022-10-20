@@ -12,8 +12,11 @@ data class Ticket(
     var id: Long,
     @ManyToOne
     var user: ServiceUser,
+    @ManyToOne
+    var promo: Promo?,
     var price: Long,
     var promoPrice: Long,
+    var referBonusUsed: Long,
     var role: Role,
     var duration: SubscriptionDuration,
     var address: String,

@@ -46,7 +46,10 @@ class SubscriptionCommand : Command {
                 val referPromo = user.serviceUser.referPromo
                 if (referPromo != null) {
                     append("Бонус от патрнеров: <b>${user.serviceUser.referBonus}$</b>\n")
-                    append("Ваш реферальный промокод: <b>${referPromo.id}</b>\n")
+                    append("Количество партрнеров: <b>${user.serviceUser.referNumber}</b>\n")
+                    append("Ваш реферальный промокод: <code>${referPromo.id}</code>\n")
+                    append("Ваша реферальная ссылка: ${Utils.createCommandLinkNoEncode("promo${referPromo.id}")}\n")
+
                     append("<i>Каждый, кто укажет этот промокод, получит скидку " +
                             "<b>${PromoService.percentToReadable(referPromo.discount)}</b>, " +
                             "а вы получите <b>${PromoService.percentToReadable(promoService.referReward)}</b> " +

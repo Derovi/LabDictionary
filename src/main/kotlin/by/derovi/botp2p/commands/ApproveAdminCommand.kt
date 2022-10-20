@@ -4,10 +4,8 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.library.Utils
 import by.derovi.botp2p.model.Role
 import by.derovi.botp2p.model.Ticket
-import by.derovi.botp2p.services.ButtonsService
-import by.derovi.botp2p.services.CommandService
-import by.derovi.botp2p.services.TicketsService
-import by.derovi.botp2p.services.UserService
+import by.derovi.botp2p.model.UserRepository
+import by.derovi.botp2p.services.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -30,7 +28,13 @@ class ApproveAdminCommand : Command {
     lateinit var ticketsService: TicketsService
 
     @Autowired
+    lateinit var userRepository: UserRepository
+
+    @Autowired
     lateinit var userService: UserService
+
+    @Autowired
+    lateinit var promoService: PromoService
 
     override fun use(user: BotUser, vararg args: String) {
         val ticket = args.firstOrNull()?.toLongOrNull()?.let(ticketsService::getTicket)?.orElse(null) ?: let {
@@ -41,11 +45,33 @@ class ApproveAdminCommand : Command {
         ticketsService.approveByAdmin(ticket)
         user.sendMessage("Заявка <b>${ticket.id}</b> подтверждена!")
         val botUser = userService.getBotUserById(ticket.user.userId)
-        botUser.sendMessageWithBackButton(buildString {
+
+        val promo = ticket.promo
+        if (promo != null) {
+            promoService.promoUsed(
+                promo,
+                ticket.promoPrice,
+                ticket.role,
+                ticket.duration
+            )
+        }
+        botUser.serviceUser.referBonus -= ticket.referBonusUsed
+        userRepository.save(botUser.serviceUser)
+        botUser.sendMessage(buildString {
             append("✅ Вам выдана подписка <b>${ticket.role.readableName}</b> на <b>${ticket.duration.readableName2}</b>\n")
             append("Спасибо за оплату!")
             toString()
-        })
+        },
+            with(InlineKeyboardMarkup.builder()) {
+                keyboardRow(mutableListOf(
+                    InlineKeyboardButton.builder()
+                        .text("↩️ Главное меню")
+                        .callbackData("/start")
+                        .build()
+                ))
+                build()
+            }
+        )
         context.getBean(CommandService::class.java).back(user)
     }
 }

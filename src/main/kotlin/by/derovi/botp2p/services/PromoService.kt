@@ -1,9 +1,6 @@
 package by.derovi.botp2p.services
 
-import by.derovi.botp2p.model.Promo
-import by.derovi.botp2p.model.PromoRepository
-import by.derovi.botp2p.model.Role
-import by.derovi.botp2p.model.SubscriptionDuration
+import by.derovi.botp2p.model.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -24,6 +21,11 @@ private fun randomPromoIdWithoutValidation() = (0 until size)
 class PromoService {
     @Autowired
     lateinit var promoRepository: PromoRepository
+
+    @Autowired
+    lateinit var userRepository: UserRepository
+    @Autowired
+    lateinit var userService: UserService
 
     val referReward = 0.1
     val referDiscount = 0.2
@@ -71,6 +73,26 @@ class PromoService {
                 return promo
             }
         }
+    }
+
+    fun promoUsed(
+        promo: Promo,
+        promoPrice: Long,
+        role: Role,
+        duration: SubscriptionDuration
+    ) {
+        val referId = promo.referId ?: return
+        val refer = userService.getBotUserById(referId)
+        val amount = (promoPrice * referReward).toInt()
+        refer.serviceUser.referBonus += amount
+        refer.serviceUser.referNumber++
+        refer.sendMessageWithBackButton(
+            buildString {
+                append("\uD83D\uDC65 Пользователь оплатил подписку <b>${role.readableName}</b> " +
+                        "на <b>${duration.readableName2}</b> по вашей реферальной ссылке!\n")
+                append("Вам зачислено <b>$amount usdt</b> бонусами!")
+            }
+        )
     }
 
     @PostConstruct

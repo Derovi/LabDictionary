@@ -57,7 +57,10 @@ class UpdateService {
                     return
                 }
 
-                if (text.startsWith("/") || !dialogService.isDialogActive(user)) {
+                if (text.startsWith("/start promo")) {
+                    val promo = text.substringAfter("/start promo")
+                    useCommandWithArguments("/promo#$promo", user)
+                } else if (text.startsWith("/") || !dialogService.isDialogActive(user)) {
                     useCommandWithArguments(text, user)
                 } else {
                     dialogService.continueDialog(user)

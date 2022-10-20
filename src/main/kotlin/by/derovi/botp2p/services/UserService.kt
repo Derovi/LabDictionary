@@ -80,6 +80,7 @@ class UserService {
             login,
             chatId,
             0,
+            0,
             null,
             null
         ).also {

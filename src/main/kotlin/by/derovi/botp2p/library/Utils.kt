@@ -16,6 +16,8 @@ object Utils {
 
     fun createLink(text: String, link: String) = "<a href='$link'>$text</a>"
 
+    fun createCommandLinkNoEncode(command: String)
+            = "https://t.me/deroviBot?start=${command}"
     fun createCommandLink(text: String, command: String)
         = "<a href=\"https://t.me/deroviBot" +
             "?start=${String(base62.encode(command.toByteArray()))}\"" +

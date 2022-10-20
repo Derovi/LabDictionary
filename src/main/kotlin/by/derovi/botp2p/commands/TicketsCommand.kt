@@ -71,6 +71,16 @@ class TicketsCommand : Command {
                 if (ticket.price != ticket.promoPrice) {
                     append("К оплате без скидки: <s>").append(ticket.price).append("</s>\n")
                 }
+                val promo = ticket.promo
+                if (promo != null) {
+                    append("Промо: <code>").append(promo.id).append("</code>")
+                    if (promo.referId != null) {
+                        append(" #${promo.referId}")
+                    }
+                    append("\n")
+                }
+                append("Использовано бонусов: <b>").append(ticket.referBonusUsed).append(" usdt</b>\n")
+                append("Всего бонусов: <b>").append(ticket.user.referBonus).append(" usdt</b>\n")
                 append("Подписка: <b>${ticket.role.readableName}</b>\n")
                 append("Длительность: <b>${ticket.duration.readableName}</b>\n")
                 append("Создано: <b>${Utils.formatDate(ticket.createdAt)}</b>\n")

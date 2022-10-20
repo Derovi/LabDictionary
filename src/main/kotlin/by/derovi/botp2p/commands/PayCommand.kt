@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import kotlin.math.max
 
 @Component
 class PayCommand : Command {
@@ -52,19 +53,25 @@ class PayCommand : Command {
                 append(role.description)
                 append("\n\n")
 
-                val promoPrice = promoPrices?.get(role)?.get(duration) ?: price
+                val promoPriceNoBonus = promoPrices?.get(role)?.get(duration) ?: price
+                val promoPrice = max(0, promoPriceNoBonus - user.serviceUser.referBonus)
+                val referBonusUsed = promoPriceNoBonus - promoPrice
 //                if (price != promoPrice) {
 //                    append("<s>$price</s> <b>$promoPrice usdt</b>\n")
 //                } else {
 //                    append("<b>$promoPrice usdt</b>\n")
 //                }
-
+                if (referBonusUsed > 0) {
+                    append("Будет использовано <b>$referBonusUsed usdt</b> от рефералов!\n")
+                }
                 append("Сумма к оплате: <b>${promoPrice} usdt</b>\n")
                 append("Адрес:\n")
                 val ticket = ticketService.createTicket(
                     user.serviceUser,
+                    promo,
                     price.toLong(),
-                    promoPrice.toLong(),
+                    promoPrice,
+                    referBonusUsed,
                     role,
                     duration
                 )
