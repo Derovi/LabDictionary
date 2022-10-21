@@ -25,7 +25,7 @@ object BundlesPreview {
         append(buy(bundle))
         append(sell(bundle))
         append("\n")
-        append(offers(bundle, 2))
+        append(offers(bundle, 4))
         toString()
     }
 

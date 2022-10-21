@@ -14,7 +14,7 @@ class StartCommand : Command {
     override fun use(user: BotUser, vararg args: String) {
         user.sendMessage(
             buildString {
-                append("<b>DEROVI p2p BOT</b> — ")
+                append("<b>\uD83E\uDD16 DEROVI p2p BOT</b> — ")
                 append("Твой помощник в поиске самых лучших связок и больших спредов\n")
                 append("\n")
                 append("Краткий обзор: https://www.youtube.com/watch?v=dQw4w9WgXcQ\n")

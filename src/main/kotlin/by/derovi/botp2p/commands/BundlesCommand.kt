@@ -112,6 +112,46 @@ class BundlesCommand : Command {
                 }
                 keyboardRow(columns)
 
+                val nextBuyIdx = bundles.asSequence().drop(bundleIdx + 1).withIndex().find {
+                    it.value.buyToken != bundle.buyToken ||
+                    it.value.buyExchange != bundle.buyExchange ||
+                    it.value.currency != bundle.currency
+                }?.index?.plus(bundleIdx + 1)
+                val nextSellIdx = bundles.asSequence().drop(bundleIdx + 1).withIndex().find {
+                    it.value.sellToken != bundle.sellToken ||
+                    it.value.sellExchange != bundle.sellExchange ||
+                    it.value.currency != bundle.currency
+                }?.index?.plus(bundleIdx + 1)
+
+                val columns2 = mutableListOf<InlineKeyboardButton>()
+                if (nextBuyIdx != null) {
+                    columns2.add(
+                        InlineKeyboardButton.builder()
+                            .text("⏩ Другая покупка")
+                            .callbackData("/bundles?$nextBuyIdx&$ttOnly&false")
+                            .build()
+                    )
+                }
+                if (bundleIdx > 1) {
+                    columns2.add(
+                        InlineKeyboardButton.builder()
+                            .text("⏪ В начало")
+                            .callbackData("/bundles?$0&$ttOnly&false")
+                            .build()
+                    )
+                }
+                if (nextSellIdx != null) {
+                    columns2.add(
+                        InlineKeyboardButton.builder()
+                            .text("⏩ Другая продажа")
+                            .callbackData("/bundles?$nextSellIdx&$ttOnly&false")
+                            .build()
+                    )
+                }
+                if (columns2.isNotEmpty()) {
+                    keyboardRow(columns2)
+                }
+
 //                val availableCurrencies = user.serviceUser.userSettings.paymentMethods
 //                    .map(CurrencyAndPaymentMethod::currency)
 //                    .distinct()
