@@ -46,6 +46,7 @@ class BundlesService {
     fun makeWrapper(searchSettings: SearchSettings) = BundleSearch.SearchSettingsWrapper(
         searchSettings.tokens,
         searchSettings.exchanges.mapNotNull { name -> bundleSearch.commonExchanges.find { it.name() == name } },
+        searchSettings.buyMakerBinance,
         searchSettings.paymentMethodsAsMap,
     )
 

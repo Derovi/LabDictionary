@@ -20,8 +20,9 @@ data class SearchSettings(
     var tokens: MutableList<Token>,
     @ElementCollection
     var exchanges: MutableList<String>,
+    var buyMakerBinance: Boolean,
     @ElementCollection(targetClass = CurrencyAndPaymentMethod::class)
-    var paymentMethods: MutableList<CurrencyAndPaymentMethod>
+    var paymentMethods: MutableList<CurrencyAndPaymentMethod>,
 ) {
     val paymentMethodsAsMap: Map<Currency, List<PaymentMethod>>
         get() {

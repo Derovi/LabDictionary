@@ -27,11 +27,12 @@ class UserService {
 
     val userIdToLastAction = mutableMapOf<Long, Long>()
 
-    fun createDefaultSearchSettings(): SearchSettings {
+    fun createDefaultSearchSettings(buyMakerBinance: Boolean = true): SearchSettings {
         val searchSettings = SearchSettings(
             0,
             Token.values().toMutableList(),
             context.getBean(BundleSearch::class.java).commonExchanges.map(Exchange::name).toMutableList(),
+            buyMakerBinance,
             mutableListOf(
                 CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.TINKOFF),
                 CurrencyAndPaymentMethod(Currency.RUB, PaymentMethod.CITIBANK),
@@ -60,11 +61,11 @@ class UserService {
         mutableListOf(),
         null,
         SettingsMode.STANDARD,
+        createDefaultSearchSettings(false),
+        createDefaultSearchSettings(false),
         createDefaultSearchSettings(),
         createDefaultSearchSettings(),
-        createDefaultSearchSettings(),
-        createDefaultSearchSettings(),
-        createDefaultSearchSettings(),
+        createDefaultSearchSettings(false),
         createDefaultSearchSettings(),
         createDefaultSearchSettings(),
         createDefaultSearchSettings(),

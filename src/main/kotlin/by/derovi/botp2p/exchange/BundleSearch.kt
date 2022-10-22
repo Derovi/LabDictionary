@@ -133,9 +133,10 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             taker: Boolean,
             paymentMethod: PaymentMethod
         ) = with(searchSettingsMap[buy]!![taker]!!) {
-            exchanges.contains(exchange) &&
-                    tokens.contains(token) &&
-                    paymentMethods[currency]?.contains(paymentMethod) == true
+            (taker || !buy || exchange != Binance || buyMakerBinance) &&
+                exchanges.contains(exchange) &&
+                tokens.contains(token) &&
+                paymentMethods[currency]?.contains(paymentMethod) == true
         }
 
         val buyOffersTaker = mutableListOf<Offer>()
@@ -161,12 +162,9 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                 }
             }
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
-                if (tradingMode == TradingMode.MAKER_MAKER_BINANCE_MERCHANT
-                    || tradingMode == TradingMode.MAKER_MAKER_NO_BINANCE && exchange != Binance) {
-                    if (it.isNotEmpty()) {
-                        if (checkRestrictions(true, false, paymentMethod)) {
-                            buyOffersMaker.addAll(it.take(1)) // buy maker
-                        }
+                if (tradingMode == TradingMode.MAKER_MAKER && it.isNotEmpty()) {
+                    if (checkRestrictions(true, false, paymentMethod)) {
+                        buyOffersMaker.addAll(it.take(1)) // buy maker
                     }
                 }
                 if (checkRestrictions(false, true, paymentMethod)) {
@@ -204,6 +202,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
     class SearchSettingsWrapper(
         val tokens: List<Token>,
         val exchanges: List<Exchange>,
+        val buyMakerBinance: Boolean,
         val paymentMethodsAsMap: Map<Currency, List<PaymentMethod>>
     )
 
@@ -234,7 +233,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             { it }
         )
 
-        val tradingMode = if (taker) TradingMode.TAKER_TAKER else TradingMode.MAKER_MAKER_BINANCE_MERCHANT
+        val tradingMode = if (taker) TradingMode.TAKER_TAKER else TradingMode.MAKER_MAKER
         val offers = mutableListOf<Offer>()
         for (exchange in exchanges) {
             for (token in tokens) {

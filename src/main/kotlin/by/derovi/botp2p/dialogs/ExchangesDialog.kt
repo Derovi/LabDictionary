@@ -5,6 +5,7 @@ import by.derovi.botp2p.commands.SearchSettingsCommand
 import by.derovi.botp2p.exchange.BundleSearch
 import by.derovi.botp2p.exchange.Exchange
 import by.derovi.botp2p.exchange.Token
+import by.derovi.botp2p.exchange.exchanges.Binance
 import by.derovi.botp2p.library.checkIfSelected
 import by.derovi.botp2p.model.SearchSettings
 import by.derovi.botp2p.model.SearchSettingsRepository
@@ -32,6 +33,8 @@ class ExchangesDialog : Dialog {
     lateinit var buttonsService: ButtonsService
 
     lateinit var searchSettings: SearchSettings
+
+    var idx = 0
 
     fun printText(user: BotUser) {
         val exchanges = bundleSearch.commonExchanges.map(Exchange::name)
@@ -62,6 +65,22 @@ class ExchangesDialog : Dialog {
                             .build()
                     }
                 }.forEach(::keyboardRow)
+                if (idx in listOf(0, 1, 4) && chosenExchanges.contains(Binance.name())) {
+                    keyboardRow(
+                        mutableListOf(
+                            if (searchSettings.buyMakerBinance)
+                                InlineKeyboardButton.builder()
+                                    .text("\uD83D\uDFE2 Покупка как Мейкер на Binance [Включено]")
+                                    .callbackData("gui:buymakerbinanceoff")
+                                    .build()
+                            else
+                                InlineKeyboardButton.builder()
+                                    .text("\uD83D\uDD34 Покупка как Мейкер на Binance [Выключено]")
+                                    .callbackData("gui:buymakerbinanceon")
+                                    .build()
+                        )
+                    )
+                }
                 keyboardRow(mutableListOf(buttonsService.backButton()))
                 build()
             }
@@ -69,29 +88,36 @@ class ExchangesDialog : Dialog {
     }
 
     override fun start(user: BotUser, args: List<String>) {
-        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+        idx = args.firstOrNull()?.toIntOrNull() ?: 0
+        searchSettings = SearchSettingsCommand.getSettingsByIdx(user.serviceUser.userSettings, idx)
         printText(user)
     }
 
     override fun update(user: BotUser): Boolean {
         val (text, gui) = if (user.message.startsWith("gui:"))
             user.message.substringAfter("gui:") to true else user.message to false
-        val currentExchanges = searchSettings.exchanges
-        val inputExchanges = text.split(Regex("[^a-zA-Z0-9]+"))
 
-        val availableExchanges = bundleSearch.commonExchanges.map(Exchange::name)
         val newExchanges = mutableListOf<String>()
-        for (exchangeName in inputExchanges) {
-            val exchange = availableExchanges.find { it.equals(exchangeName, ignoreCase = true) }
-            if (exchange != null) {
-                newExchanges.add(exchange)
-            } else {
-                user.sendMessage("\uD83D\uDCB1 Биржи <b>\"$exchangeName\"</b> не существует!")
-                commandService.back(user)
-                return false
+
+        if (text == "buymakerbinanceon") {
+            searchSettings.buyMakerBinance = true
+        } else if (text == "buymakerbinanceoff") {
+            searchSettings.buyMakerBinance = false
+        } else {
+            val inputExchanges = text.split(Regex("[^a-zA-Z0-9]+"))
+            val availableExchanges = bundleSearch.commonExchanges.map(Exchange::name)
+            for (exchangeName in inputExchanges) {
+                val exchange = availableExchanges.find { it.equals(exchangeName, ignoreCase = true) }
+                if (exchange != null) {
+                    newExchanges.add(exchange)
+                } else {
+                    user.sendMessage("\uD83D\uDCB1 Биржи <b>\"$exchangeName\"</b> не существует!")
+                    commandService.back(user)
+                    return false
+                }
             }
+            searchSettings.exchanges = newExchanges
         }
-        searchSettings.exchanges = newExchanges
         searchSettingsRepository.save(searchSettings)
         if (gui) {
             printText(user)

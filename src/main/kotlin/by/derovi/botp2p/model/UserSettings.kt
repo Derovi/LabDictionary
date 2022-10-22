@@ -42,7 +42,7 @@ data class UserSettings(
     fun getSearchSettings(buy: Boolean, taker: Boolean) =
         when (settingsMode) {
             SettingsMode.STANDARD -> commonSettings
-            SettingsMode.TAKER_MAKER -> if (buy) takerSettings else makerSettings
+            SettingsMode.TAKER_MAKER -> if (taker) takerSettings else makerSettings
             SettingsMode.BUY_SELL -> if (buy) buySettings else sellSettings
             SettingsMode.BUY_SELL_TAKER_MAKER -> when(buy to taker) {
                 true to true -> buyTakerSettings

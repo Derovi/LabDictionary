@@ -3,7 +3,5 @@ package by.derovi.botp2p.exchange
 enum class TradingMode(val readableName: String, val description: String) {
     TAKER_TAKER("Тейкер-Тейкер", "Покупка и продажа как тейкер"),
     TAKER_MAKER("Тейкер-Мейкер", "Покупка как тейкер, продажа как мейкер"),
-    MAKER_MAKER_NO_BINANCE("Мейкер-Мейкер", "Покупка и продажа как мейкер (кроме Binance)"),
-    MAKER_MAKER_BINANCE_MERCHANT("Мейкер-Мейкер+Binance",
-        "Покупка и продажа как мейкер (если есть статус мерчанта Binance)")
+    MAKER_MAKER("Мейкер-Мейкер", "Покупка и продажа как мейкер"),
 }

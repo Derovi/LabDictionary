@@ -42,10 +42,10 @@ class ModeDialog : Dialog {
             InlineKeyboardMarkup.builder()
                 .keyboardRow(mutableListOf(
                     buttonForMode(TradingMode.TAKER_TAKER),
-                    buttonForMode(TradingMode.TAKER_MAKER)
                 )).keyboardRow(mutableListOf(
-                    buttonForMode(TradingMode.MAKER_MAKER_NO_BINANCE),
-                    buttonForMode(TradingMode.MAKER_MAKER_BINANCE_MERCHANT)
+                    buttonForMode(TradingMode.TAKER_MAKER),
+                )).keyboardRow(mutableListOf(
+                    buttonForMode(TradingMode.MAKER_MAKER),
                 )).build()
         )
     }
