@@ -211,6 +211,20 @@ class PricesCommand : Command {
                 toString()
             },
             with(InlineKeyboardMarkup.builder()) {
+                val cancelButton = InlineKeyboardButton.builder()
+                    .text("↩️ Отмена")
+                    .callbackData(url(
+                        showFull,
+                        buy,
+                        taker,
+                        chosenExchange,
+                        chosenToken,
+                        null,
+                        pinnedBuyToken,
+                        pinnedBuyPrice,
+                        pinnedSellToken,
+                        pinnedSellPrice
+                    )).build()
                 when(command) {
                     "chooseexchange" -> {
                         bundleSearch.commonExchanges.asSequence().chunked(3).map {
@@ -231,6 +245,7 @@ class PricesCommand : Command {
                                     )).build()
                             }
                         }.forEach(::keyboardRow)
+                        keyboardRow(mutableListOf(cancelButton))
                     }
                     "choosetoken" -> {
                         Token.values().asSequence().chunked(4).map {
@@ -251,6 +266,7 @@ class PricesCommand : Command {
                                     )).build()
                             }
                         }.forEach(::keyboardRow)
+                        keyboardRow(mutableListOf(cancelButton))
                     }
                     else -> {
                         keyboardRow(listOf(
@@ -368,7 +384,7 @@ class PricesCommand : Command {
                                 .callbackData(url(
                                     showFull,
                                     buy,
-                                    true,
+                                    taker,
                                     null,
                                     chosenToken,
                                     null,
@@ -383,7 +399,7 @@ class PricesCommand : Command {
                                 .callbackData(url(
                                     showFull,
                                     buy,
-                                    false,
+                                    taker,
                                     chosenExchange,
                                     chosenToken,
                                     "chooseexchange",
@@ -400,7 +416,7 @@ class PricesCommand : Command {
                                 .callbackData(url(
                                     showFull,
                                     buy,
-                                    true,
+                                    taker,
                                     chosenExchange,
                                     null,
                                     null,
@@ -415,7 +431,7 @@ class PricesCommand : Command {
                                 .callbackData(url(
                                     showFull,
                                     buy,
-                                    false,
+                                    taker,
                                     chosenExchange,
                                     chosenToken,
                                     "choosetoken",
@@ -425,14 +441,13 @@ class PricesCommand : Command {
                                     pinnedSellPrice
                                 )).build(),
                         ))
+                        keyboardRow(mutableListOf(InlineKeyboardButton
+                            .builder()
+                            .text("↩️ Главное меню")
+                            .callbackData("/start")
+                            .build()))
                     }
                 }
-
-                keyboardRow(mutableListOf(InlineKeyboardButton
-                    .builder()
-                    .text("↩️ Главное меню")
-                    .callbackData("/start")
-                    .build()))
                 build()
             }
         )
