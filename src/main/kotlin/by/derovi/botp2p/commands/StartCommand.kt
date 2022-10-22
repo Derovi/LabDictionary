@@ -20,7 +20,7 @@ class StartCommand : Command {
                 append("\n")
                 append("\uD83D\uDD0E ").append(Utils.createLink("Краткий обзор", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
                 append("\uD83D\uDCD6 ").append(Utils.createLink("Полная инструкция", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
-                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Гайд по режиму \"Лучшие цены\"", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
+                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Гайд по режиму Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
                 append("Поддержка: @deroviAdmin\n")
                 toString()
             },

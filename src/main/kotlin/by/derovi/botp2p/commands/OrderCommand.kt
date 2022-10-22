@@ -57,7 +57,7 @@ class OrderCommand : Command {
                 for ((duration, _) in prices[role] ?: mapOf()) {
                    keyboardRow(mutableListOf(
                        InlineKeyboardButton.builder()
-                           .text("Оплатить на ${duration.readableName2}")
+                           .text("✅ Оплатить на ${duration.readableName2}")
                            .callbackData("/pay?$role&$duration")
                            .build()
                    ))

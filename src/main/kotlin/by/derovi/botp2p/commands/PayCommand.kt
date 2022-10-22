@@ -84,13 +84,13 @@ class PayCommand : Command {
             with(InlineKeyboardMarkup.builder()) {
                 keyboardRow(mutableListOf(
                     InlineKeyboardButton.builder()
-                        .text("Я оплатил")
+                        .text("✅ Я оплатил")
                         .callbackData("/approvePayment")
                         .build()
                 ))
                 keyboardRow(mutableListOf(
                     InlineKeyboardButton.builder()
-                        .text("Отменить оплату")
+                        .text("\uD83D\uDEAB Отменить оплату")
                         .callbackData("/cancelPayment")
                         .build()
                 ))
