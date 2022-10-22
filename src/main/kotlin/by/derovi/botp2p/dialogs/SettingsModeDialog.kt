@@ -43,6 +43,7 @@ class SettingsModeDialog : Dialog {
             with(InlineKeyboardMarkup.builder()) {
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.STANDARD)))
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL)))
+                keyboardRow(mutableListOf(buttonForMode(SettingsMode.TAKER_MAKER)))
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL_TAKER_MAKER)))
                 build()
             }

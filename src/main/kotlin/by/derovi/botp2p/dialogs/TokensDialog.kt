@@ -33,19 +33,18 @@ class TokensDialog : Dialog {
 
     lateinit var searchSettings: SearchSettings
 
-    override fun start(user: BotUser, args: List<String>) {
-        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+    fun printText(user: BotUser) {
         user.sendMessage(buildString {
-                append("\uD83E\uDE99 Токены\n")
-                append("Установлены: <code>${
-                    Token.values()
-                        .filter { it in searchSettings.tokens }
-                        .map(Token::name).joinToString(", ")}</code>\n"
-                )
-                append("Доступны: <code>${Token.values().map(Token::name).joinToString(", ")}</code>\n")
-                append("<i>Введите токены через запятую или выберите их кнопками</i>")
-                toString()
-            },
+            append("\uD83E\uDE99 Токены\n")
+            append("Установлены: <code>${
+                Token.values()
+                    .filter { it in searchSettings.tokens }
+                    .map(Token::name).joinToString(", ")}</code>\n"
+            )
+            append("Доступны: <code>${Token.values().map(Token::name).joinToString(", ")}</code>\n")
+            append("<i>Введите токены через запятую или выберите их кнопками</i>")
+            toString()
+        },
             with(InlineKeyboardMarkup.builder()) {
                 Token.values().asSequence().chunked(4).map {
                     it.map { token ->
@@ -66,6 +65,11 @@ class TokensDialog : Dialog {
                 build()
             }
         )
+    }
+
+    override fun start(user: BotUser, args: List<String>) {
+        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+        printText(user)
     }
 
     override fun update(user: BotUser): Boolean {
@@ -89,7 +93,7 @@ class TokensDialog : Dialog {
         searchSettings.tokens = newTokens
         searchSettingsRepository.save(searchSettings)
         if (gui) {
-            start(user, listOf())
+            printText(user)
             return true
         }
         user.sendMessage("\uD83E\uDE99 Установлены токены [<code>${newTokens.map(Token::name)

@@ -33,9 +33,7 @@ class ExchangesDialog : Dialog {
 
     lateinit var searchSettings: SearchSettings
 
-    override fun start(user: BotUser, args: List<String>) {
-        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
-
+    fun printText(user: BotUser) {
         val exchanges = bundleSearch.commonExchanges.map(Exchange::name)
         val chosenExchanges = exchanges.filter { it in searchSettings.exchanges }
         user.sendMessage(
@@ -54,7 +52,7 @@ class ExchangesDialog : Dialog {
                         val selected = exchange in chosenExchanges
                         InlineKeyboardButton.builder()
                             .text(exchange.checkIfSelected(selected))
-                            .callbackData("gui:" + exchanges.toMutableSet().apply {
+                            .callbackData("gui:" + chosenExchanges.toMutableSet().apply {
                                 if (selected) {
                                     remove(exchange)
                                 } else {
@@ -68,6 +66,11 @@ class ExchangesDialog : Dialog {
                 build()
             }
         )
+    }
+
+    override fun start(user: BotUser, args: List<String>) {
+        searchSettings = SearchSettingsCommand.getSettingsByArgs(user.serviceUser.userSettings, args)
+        printText(user)
     }
 
     override fun update(user: BotUser): Boolean {
@@ -91,7 +94,7 @@ class ExchangesDialog : Dialog {
         searchSettings.exchanges = newExchanges
         searchSettingsRepository.save(searchSettings)
         if (gui) {
-            start(user, listOf())
+            printText(user)
             return true
         }
         user.sendMessage("\uD83E\uDE99 Установлены биржи " +

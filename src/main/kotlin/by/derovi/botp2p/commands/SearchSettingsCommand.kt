@@ -133,8 +133,8 @@ class SearchSettingsCommand : Command {
                         .text("\uD83D\uDCB3 Карточки")
                         .callbackData("/banks?$settingsIdx").build()
                 )).keyboardRow(mutableListOf(
-                    InlineKeyboardButton.builder().text("\uD83D\uDCE5 Импорт").callbackData("/import?0").build(),
-                    InlineKeyboardButton.builder().text("\uD83D\uDCE4 Экспорт").callbackData("/export?0").build()
+                    InlineKeyboardButton.builder().text("\uD83D\uDCE5 Импорт").callbackData("/import?$settingsIdx").build(),
+                    InlineKeyboardButton.builder().text("\uD83D\uDCE4 Экспорт").callbackData("/export?$settingsIdx").build()
                 ))
 
                 keyboardRow(mutableListOf(buttonsService.backButton()))
