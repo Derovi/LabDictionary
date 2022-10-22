@@ -1,5 +1,6 @@
 package by.derovi.botp2p.library
 
+import by.derovi.botp2p.services.CommandService
 import io.seruco.encoding.base62.Base62
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,6 +23,7 @@ object Utils {
 
     fun createCommandLinkNoEncode(command: String)
             = "https://t.me/deroviBot?start=${command}"
+
     fun createCommandLink(text: String, command: String)
         = "<a href=\"https://t.me/deroviBot" +
             "?start=${String(base62.encode(command.toByteArray()))}\"" +

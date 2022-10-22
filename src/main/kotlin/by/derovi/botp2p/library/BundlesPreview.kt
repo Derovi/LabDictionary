@@ -72,7 +72,7 @@ object BundlesPreview {
         toString()
     }
 
-    fun banLink(name: String, exchange: String) = Utils.createCommandLink("[ban]", "/ban?$name&$exchange")
+    fun banLink(name: String, exchange: String) = Utils.createCommandLink(" \uD83D\uDEAB ", "/ban?$name&$exchange")
     fun textForOffer(bundle: BundleSearchResult, idx: Int, offer: Offer) =
         "<b>[${idx + 1}]</b> " +
                 "${Utils.createLink(offer.username, offer.link)} - <b>${offer.paymentMethod}</b>, " +

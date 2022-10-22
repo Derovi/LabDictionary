@@ -21,7 +21,7 @@ class ButtonsService {
     fun bansButton(settings: UserSettings) =
         InlineKeyboardButton
             .builder()
-            .text("\uD83D\uDEAB Забаненные мейкеры [${settings.banned.size}]")
+            .text("\uD83D\uDEAB Заблокированные мейкеры [${settings.banned.size}]")
             .callbackData("/bans")
             .build()
 

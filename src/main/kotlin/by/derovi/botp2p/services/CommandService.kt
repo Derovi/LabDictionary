@@ -4,11 +4,14 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.commands.Command
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import java.util.Stack
+import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
+import kotlin.random.Random
 
 @Service
 class CommandService {
@@ -21,6 +24,25 @@ class CommandService {
     @PostConstruct
     fun wireCommands() {
         commands = context.getBeansOfType(Command::class.java).values.associateBy { it.name }
+    }
+
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+    fun removeExpired() {
+        managedCommands.values.removeIf { it.createdAt + 60 * 60 * 1000 < System.currentTimeMillis() }
+    }
+    
+    class ManagedCommand(val command: String, val createdAt: Long)
+
+    val managedCommands = mutableMapOf<Long, ManagedCommand>()
+    fun getManagedCommand(id: Long) = managedCommands[id]
+    fun manageCommand(command: String): Long {
+        val id = Random.nextLong()
+        managedCommands[id] = ManagedCommand(command, System.currentTimeMillis())
+        return id
+    }
+    fun manageCommandUrl(command: String): String {
+        val id = manageCommand(command)
+        return "/managedcommand?$id"
     }
 
     fun adjustSettingsAccordingToPermissions(botUser: BotUser) {
@@ -47,6 +69,7 @@ class CommandService {
     }
 
     fun use(fullCommand: String, botUser: BotUser, addToStack: Boolean = true) {
+        println(fullCommand)
         val name = ("$fullCommand?").substringBefore("?")
         val arguments = fullCommand.substringAfter("?").split("&")
 
