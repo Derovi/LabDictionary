@@ -64,7 +64,9 @@ class BundlesService {
     fun searchBestPricesForUser(
         user: ServiceUser,
         buy: Boolean,
-        taker: Boolean
+        taker: Boolean,
+        exchange: Exchange?,
+        token: Token?
     ) = bundleSearch.searchBestPrices(
         searchSettingsMap(user),
         buy,
@@ -72,7 +74,9 @@ class BundlesService {
         user.userSettings.banned,
         Currency.RUB,
         user.userSettings.minimumValue,
-        user.userSettings.workValue
+        user.userSettings.workValue,
+        if (exchange != null) listOf(exchange) else null,
+        if (token != null) listOf(token) else null
     )
 
     fun searchBundlesForUser(user: ServiceUser) {

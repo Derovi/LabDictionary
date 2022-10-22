@@ -215,7 +215,9 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         bannedMakers: List<Maker>,
         currency: Currency,
         minValue: Int,
-        workValue: Int
+        workValue: Int,
+        exchangeWhitelist: List<Exchange>?,
+        tokenWhitelist: List<Token>?
     ): List<Offer> {
         val paymentMethods = merge(
             searchSettingsMap,
@@ -226,12 +228,22 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             searchSettingsMap,
             { it.exchanges.toSet() },
             { it }
-        )
+        ).let {
+            if (exchangeWhitelist != null)
+                it.filter { it in exchangeWhitelist }
+            else
+                it
+        }
         val tokens = merge(
             searchSettingsMap,
             { it.tokens.toSet() },
             { it }
-        )
+        ).let {
+            if (tokenWhitelist != null)
+                it.filter { it in tokenWhitelist }
+            else
+                it
+        }
 
         val tradingMode = if (taker) TradingMode.TAKER_TAKER else TradingMode.MAKER_MAKER
         val offers = mutableListOf<Offer>()

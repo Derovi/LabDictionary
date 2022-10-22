@@ -39,15 +39,35 @@ class PricesCommand : Command {
     override val name = "/prices"
     override val role = Role.ADVANCED
 
-    fun url(showFull: Boolean, buy: Boolean, taker: Boolean) =
-        "/prices?$showFull&$buy&$taker"
+    fun url(
+        showFull: Boolean,
+        buy: Boolean,
+        taker: Boolean,
+        exchange: Exchange?,
+        token: Token?,
+        command: String?
+    ) = "/prices?$showFull&$buy&$taker&${exchange?.name()}&$token&${command}"
 
     override fun use(user: BotUser, vararg args: String) {
         val showFull = args.firstOrNull()?.toBooleanStrictOrNull() ?: false
         val buy = args.getOrNull(1)?.toBooleanStrictOrNull() ?: true
         val taker = args.getOrNull(2)?.toBooleanStrictOrNull() ?: true
 
-        val offers = bundlesService.searchBestPricesForUser(user.serviceUser, buy, taker)
+        val chosenExchange = args.getOrNull(3)?.let { chosenExchange ->
+            bundleSearch.commonExchanges.find { it.name().equals(chosenExchange, ignoreCase = true) }
+        }
+        val chosenToken = args.getOrNull(4)?.let { chosenToken ->
+            Token.values().find { it.name.equals(chosenToken, ignoreCase = true) }
+        }
+        val command = args.getOrNull(5)
+
+        val offers = bundlesService.searchBestPricesForUser(
+            user.serviceUser,
+            buy,
+            taker,
+            chosenExchange,
+            chosenToken
+        )
         val currency = Currency.RUB
         val limit = if (showFull) 20 else 10
 
@@ -72,40 +92,84 @@ class PricesCommand : Command {
                 toString()
             },
             with(InlineKeyboardMarkup.builder()) {
-                keyboardRow(listOf(
-                    InlineKeyboardButton
-                        .builder()
-                        .text("\uD83D\uDD04 Обновить")
-                        .callbackData(url(showFull, buy, taker)).build(),
-                    if (!showFull) {
-                        InlineKeyboardButton.builder().text("\uD83D\uDE48 Больше")
-                            .callbackData(url(true, buy, taker)).build()
-                    } else {
-                        InlineKeyboardButton.builder().text("\uD83E\uDDD0 Меньше")
-                            .callbackData(url(false, buy, taker)).build()
+                when(command) {
+                    "chooseexchange" -> {
+                        bundleSearch.commonExchanges.asSequence().chunked(3).map {
+                            it.map { exchange ->
+                                InlineKeyboardButton.builder()
+                                    .text(exchange.name())
+                                    .callbackData(url(showFull, buy, taker, exchange, chosenToken, null))
+                                    .build()
+                            }
+                        }.forEach(::keyboardRow)
                     }
-                ))
+                    "choosetoken" -> {
+                        Token.values().asSequence().chunked(4).map {
+                            it.map { token ->
+                                InlineKeyboardButton.builder()
+                                    .text(token.name)
+                                    .callbackData(url(showFull, buy, taker, chosenExchange, token, null))
+                                    .build()
+                            }
+                        }.forEach(::keyboardRow)
+                    }
+                    else -> {
+                        keyboardRow(listOf(
+                            InlineKeyboardButton
+                                .builder()
+                                .text("\uD83D\uDD04 Обновить")
+                                .callbackData(url(showFull, buy, taker, chosenExchange, chosenToken, null)).build(),
+                            if (!showFull) {
+                                InlineKeyboardButton.builder().text("\uD83D\uDE48 Больше")
+                                    .callbackData(url(true, buy, taker, chosenExchange, chosenToken, null)).build()
+                            } else {
+                                InlineKeyboardButton.builder().text("\uD83E\uDDD0 Меньше")
+                                    .callbackData(url(false, buy, taker, chosenExchange, chosenToken, null)).build()
+                            }
+                        ))
 
-                keyboardRow(listOf(
-                    InlineKeyboardButton
-                        .builder()
-                        .text("➡ Купить".checkIfSelected(buy, true))
-                        .callbackData(url(showFull, true, taker)).build(),
-                    InlineKeyboardButton
-                        .builder()
-                        .text("⬅️ Продать".checkIfSelected(buy, false))
-                        .callbackData(url(showFull, false, taker)).build(),
-                ))
-                keyboardRow(listOf(
-                    InlineKeyboardButton
-                        .builder()
-                        .text("⬇ Тейкер".checkIfSelected(taker, true))
-                        .callbackData(url(showFull, buy, true)).build(),
-                    InlineKeyboardButton
-                        .builder()
-                        .text("⬆ Мейкер".checkIfSelected(taker, false))
-                        .callbackData(url(showFull, buy, false)).build(),
-                ))
+                        keyboardRow(listOf(
+                            InlineKeyboardButton
+                                .builder()
+                                .text("➡ Купить".checkIfSelected(buy, true))
+                                .callbackData(url(showFull, true, taker, chosenExchange, chosenToken, null)).build(),
+                            InlineKeyboardButton
+                                .builder()
+                                .text("⬅️ Продать".checkIfSelected(buy, false))
+                                .callbackData(url(showFull, false, taker, chosenExchange, chosenToken, null)).build(),
+                        ))
+                        keyboardRow(listOf(
+                            InlineKeyboardButton
+                                .builder()
+                                .text("⬇ Тейкер".checkIfSelected(taker, true))
+                                .callbackData(url(showFull, buy, true, chosenExchange, chosenToken, null)).build(),
+                            InlineKeyboardButton
+                                .builder()
+                                .text("⬆ Мейкер".checkIfSelected(taker, false))
+                                .callbackData(url(showFull, buy, false, chosenExchange, chosenToken, null)).build(),
+                        ))
+                        keyboardRow(listOf(
+                            InlineKeyboardButton
+                                .builder()
+                                .text("\uD83D\uDCB1 Все биржи".checkIfSelected(chosenExchange == null))
+                                .callbackData(url(showFull, buy, true, null, chosenToken, null)).build(),
+                            InlineKeyboardButton
+                                .builder()
+                                .text(if (chosenExchange == null) " Выбрать биржу" else "✓ \uD83D\uDCB1 Выбрать [${chosenExchange.name()}]")
+                                .callbackData(url(showFull, buy, false, chosenExchange, chosenToken, "chooseexchange")).build(),
+                        ))
+                        keyboardRow(listOf(
+                            InlineKeyboardButton
+                                .builder()
+                                .text("\uD83E\uDE99 Все токены".checkIfSelected(chosenToken == null))
+                                .callbackData(url(showFull, buy, true, chosenExchange, null, null)).build(),
+                            InlineKeyboardButton
+                                .builder()
+                                .text(if (chosenToken == null) " Выбрать токен" else "✓ \uD83E\uDE99 Выбрать [${chosenToken.name}]")
+                                .callbackData(url(showFull, buy, false, chosenExchange, chosenToken, "choosetoken")).build(),
+                        ))
+                    }
+                }
 
                 keyboardRow(mutableListOf(InlineKeyboardButton
                     .builder()
