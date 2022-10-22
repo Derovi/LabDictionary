@@ -69,7 +69,6 @@ class CommandService {
     }
 
     fun use(fullCommand: String, botUser: BotUser, addToStack: Boolean = true) {
-        println(fullCommand)
         val name = ("$fullCommand?").substringBefore("?")
         val arguments = fullCommand.substringAfter("?").split("&")
 

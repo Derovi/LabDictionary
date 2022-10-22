@@ -14,7 +14,7 @@ fun String.checkIfSelected(selected: Boolean) = if (selected) "✓ $this" else t
 object Utils {
     val base62 = Base62.createInstance()
 
-    fun normalizeSpread(value: Double) = max(0.0, round(value * 10000).toInt() / 100.0)
+    fun normalizeSpread(value: Double) = round(value * 10000).toInt() / 100.0
 
     fun formatNumber(value: Double) = max(0.0, (value * 100).toInt() / 100.0)
     fun formatDate(millis: Long) = SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(Date(millis))
