@@ -95,6 +95,7 @@ class PricesCommand : Command {
             chosenExchange,
             chosenToken
         )
+
         val currency = Currency.RUB
         val limit = if (showFull) 20 else 10
 
@@ -140,75 +141,97 @@ class PricesCommand : Command {
             }
 
             append("Показана цена 1 usdt\n")
-                for ((idx, offer) in offers.withIndex().take(limit)) {
-                    append(
-                        "<b>${idx + 1}.</b> " +
-                            "${Utils.formatNumber(offer.usdtPrice())} руб. ")
 
-                    fun appendSpread(
-                        buyToken: Token,
-                        buyPrice: Double,
-                        sellToken: Token,
-                        sellPrice: Double
-                    ) = append("[")
-                        .append(Utils.normalizeSpread((sellPrice / spotService.price(sellToken)) / (buyPrice / spotService.price(buyToken)) - 1))
-                        .append("%] ")
+            fun appendForOffer(offer: Offer) {
+                append("${Utils.formatNumber(offer.usdtPrice())} руб. ")
 
-                    if (buy && pinnedSellToken != null && pinnedSellPrice != null) {
-                        appendSpread(offer.token, offer.price, pinnedSellToken, pinnedSellPrice)
-                    } else if (!buy && pinnedBuyToken != null && pinnedBuyPrice != null) {
-                        appendSpread(pinnedBuyToken, pinnedBuyPrice, offer.token, offer.price)
-                    }
+                fun appendSpread(
+                    buyToken: Token,
+                    buyPrice: Double,
+                    sellToken: Token,
+                    sellPrice: Double
+                ) = append("[")
+                    .append(Utils.normalizeSpread((sellPrice / spotService.price(sellToken)) / (buyPrice / spotService.price(buyToken)) - 1))
+                    .append("%] ")
 
-                    append(
-                            "${Utils.createLink(offer.username, offer.link)} - " +
+                if (buy && pinnedSellToken != null && pinnedSellPrice != null) {
+                    appendSpread(offer.token, offer.price, pinnedSellToken, pinnedSellPrice)
+                } else if (!buy && pinnedBuyToken != null && pinnedBuyPrice != null) {
+                    appendSpread(pinnedBuyToken, pinnedBuyPrice, offer.token, offer.price)
+                }
+
+                append(
+                    "${Utils.createLink(offer.username, offer.link)} - " +
                             "<b>${offer.exchange?.name()}</b>, " +
                             "<b>${offer.paymentMethod}</b>, " +
                             "<b>${offer.token}</b> цена: <b>${offer.price} ${currency}</b>, " +
                             "[лимит ${offer.minLimit} - ${offer.maxLimit} ${currency}]" +
                             if (offer.completeCount == null) "" else
-                                ", [успешно ${offer.completeCount}, ${offer.completeRate}%]")
-                    if (buy) {
-                        append(
-                            Utils.createCommandLink(
-                                " \uD83D\uDCCC ",
-                                url(
-                                    showFull,
-                                    false,
-                                    taker,
-                                    chosenExchange,
-                                    chosenToken,
-                                    null,
-                                    offer.token,
-                                    offer.price,
-                                    pinnedSellToken,
-                                    pinnedSellPrice
-                                )
+                                ", [успешно ${offer.completeCount}, ${offer.completeRate}%] ")
+                if (buy) {
+                    append(
+                        Utils.createCommandLink(
+                            " \uD83D\uDCCC ",
+                            url(
+                                showFull,
+                                false,
+                                taker,
+                                chosenExchange,
+                                chosenToken,
+                                null,
+                                offer.token,
+                                offer.price,
+                                pinnedSellToken,
+                                pinnedSellPrice
                             )
                         )
-                    } else {
-                        append(
-                            Utils.createCommandLink(
-                                " \uD83D\uDCCC ",
-                                url(
-                                    showFull,
-                                    true,
-                                    taker,
-                                    chosenExchange,
-                                    chosenToken,
-                                    null,
-                                    pinnedBuyToken,
-                                    pinnedBuyPrice,
-                                    offer.token,
-                                    offer.price
-                                )
+                    )
+                } else {
+                    append(
+                        Utils.createCommandLink(
+                            " \uD83D\uDCCC ",
+                            url(
+                                showFull,
+                                true,
+                                taker,
+                                chosenExchange,
+                                chosenToken,
+                                null,
+                                pinnedBuyToken,
+                                pinnedBuyPrice,
+                                offer.token,
+                                offer.price
                             )
                         )
-                    }
-
-                    append("  ${BundlesPreview.banLink(offer.username, offer.exchange!!.name())}\n")
+                    )
                 }
-                toString()
+
+                append("  ${BundlesPreview.banLink(offer.username, offer.exchange!!.name())}\n")
+            }
+            if (taker) {
+                for ((idx, offer) in offers.withIndex().take(limit)) {
+                    append("<b>${idx + 1}.</b> ")
+                    appendForOffer(offer)
+                }
+            } else {
+                val groupedOffers = offers.groupBy { it.exchange to it.token }.entries.sortedWith { first, second ->
+                    val firstPrice = first.value.firstOrNull()?.usdtPrice()
+                    val secondPrice = second.value.firstOrNull()?.usdtPrice()
+
+                    val result = firstPrice?.compareTo(secondPrice ?: Double.POSITIVE_INFINITY) ?: 1
+                    return@sortedWith result * if (buy) 1 else -1
+                }.map { it.value.take(4) }.take(10)
+
+                var idx = 0
+                for ((groupIdx, group) in groupedOffers.withIndex()) {
+                    for ((offerIdx, offer) in group.withIndex()) {
+                        if (++idx > limit) break
+                        append("<b>${groupIdx + 1}${('а'.toInt() + offerIdx).toChar()}</b>. ")
+                        appendForOffer(offer)
+                    }
+                }
+            }
+            toString()
             },
             with(InlineKeyboardMarkup.builder()) {
                 val cancelButton = InlineKeyboardButton.builder()

@@ -113,7 +113,7 @@ class SettingsCommand : Command {
                         .callbackData("/spot").build(),
                     InlineKeyboardButton.builder()
                         .text(settings.notificationThreshold.let {
-                            "⚠️ Уведомления [${if (it == null) "Откл." else "от $it%"}]"
+                            "\uD83D\uDD14 Уведомления [${if (it == null) "Откл." else "от $it%"}]"
                         })
                         .callbackData("/notifications").build(),
                 ))

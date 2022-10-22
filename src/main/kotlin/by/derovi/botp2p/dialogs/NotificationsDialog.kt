@@ -23,7 +23,7 @@ class NotificationsDialog : Dialog {
 
     companion object {
         fun notificationsTitle(threshold: Double?, text: String = "Уведомления") =
-            "⚠️ $text [<b>${if (threshold == null) "Отключены" else "от $threshold%"}</b>]"
+            "\uD83D\uDD14 $text [<b>${if (threshold == null) "Отключены" else "от $threshold%"}</b>]"
     }
 
     @Autowired
@@ -54,18 +54,18 @@ class NotificationsDialog : Dialog {
         val text = user.message.replace(",", ".")
         if (text == "off") {
             user.serviceUser.userSettings.notificationThreshold = null
-            user.sendMessage("⚠️ Уведомления отключены")
+            user.sendMessage("\uD83D\uDD14 Уведомления отключены")
             commandService.back(user)
             return false
         }
         val percent = text.toDoubleOrNull()
         if (percent == null) {
-            user.sendMessage("⚠️ <b>\"$text\"</b> не является числом!")
+            user.sendMessage("\uD83D\uDD14 <b>\"$text\"</b> не является числом!")
             commandService.back(user)
             return false
         }
         if (percent < 0.5) {
-            user.sendMessage("⚠️ Спред должен быть не меньше <b>0.5%</b>")
+            user.sendMessage("\uD83D\uDD14 Спред должен быть не меньше <b>0.5%</b>")
             commandService.back(user)
             return false
         }

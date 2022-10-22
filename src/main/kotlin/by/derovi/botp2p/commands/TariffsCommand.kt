@@ -35,7 +35,7 @@ class TariffsCommand : Command {
             for (role in tariffs) {
                 append("<b>").append(role.readableName).append("</b>\n")
                 append(role.description)
-                append("\n")
+                append("\n↓\n")
                 for ((duration, price) in prices[role] ?: mapOf()) {
                     val promoPrice = promoPrices?.get(role)?.get(duration) ?: price
                     append("").append(duration.readableName).append(" - ")

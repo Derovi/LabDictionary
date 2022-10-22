@@ -48,7 +48,7 @@ class CancelAdminCommand : Command {
                 append(Utils.formatDate(ticket.approvedByUserAt!!)).append(" ")
             }
             append("<b>не была</b> подтверждена!\n")
-            append("Если вы хотите это оспорить, обратитесь в поддержку @derovi")
+            append("Если вы хотите это оспорить, обратитесь в поддержку @deroviAdmin")
             toString()
         })
         context.getBean(CommandService::class.java).back(user)

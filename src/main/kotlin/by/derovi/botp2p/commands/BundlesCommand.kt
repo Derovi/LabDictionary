@@ -73,7 +73,7 @@ class BundlesCommand : Command {
 
         val bundle = bundles[bundleIdx]
         val text = with(StringBuilder()) {
-            append("<b>${bundleIdx + 1}/${bundles.size}, ${bundle.currency}</b>, " +
+            append("\uD83D\uDCC8 <b>${bundleIdx + 1}/${bundles.size}, ${bundle.currency}</b>, " +
                     "$time\n")
             if (showFull) {
                 append(BundlesPreview.fullView(bundle))

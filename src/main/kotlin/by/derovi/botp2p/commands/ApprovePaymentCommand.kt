@@ -43,7 +43,7 @@ class ApprovePaymentCommand : Command {
                 append("Адрес:\n")
                 append("<code>${ticket.address}</code>\n")
                 append("Оплата будет проверена в течение 2 часов\n")
-                append("Поддержка: @derovi")
+                append("Поддержка: @deroviAdmin")
             },
             with(InlineKeyboardMarkup.builder()) {
                 keyboardRow(mutableListOf(
