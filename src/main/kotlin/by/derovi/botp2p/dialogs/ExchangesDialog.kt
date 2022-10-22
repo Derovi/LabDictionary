@@ -5,6 +5,7 @@ import by.derovi.botp2p.commands.SearchSettingsCommand
 import by.derovi.botp2p.exchange.BundleSearch
 import by.derovi.botp2p.exchange.Exchange
 import by.derovi.botp2p.exchange.Token
+import by.derovi.botp2p.library.checkIfSelected
 import by.derovi.botp2p.model.SearchSettings
 import by.derovi.botp2p.model.SearchSettingsRepository
 import by.derovi.botp2p.services.ButtonsService
@@ -37,7 +38,7 @@ class ExchangesDialog : Dialog {
 
         val exchanges = bundleSearch.commonExchanges.map(Exchange::name)
         val chosenExchanges = exchanges.filter { it in searchSettings.exchanges }
-        user.sendMessageWithBackButton(
+        user.sendMessage(
             buildString {
                 append("\uD83D\uDCB1 Биржи\n")
                 append("Установлены: <code>${
@@ -46,12 +47,32 @@ class ExchangesDialog : Dialog {
                 append("Доступны: <code>${exchanges.joinToString(", ")}</code>\n")
                 append("<i>Введите биржи через запятую</i>")
                 toString()
+            },
+            with(InlineKeyboardMarkup.builder()) {
+                exchanges.asSequence().chunked(3).map {
+                    it.map { exchange ->
+                        val selected = exchange in chosenExchanges
+                        InlineKeyboardButton.builder()
+                            .text(exchange.checkIfSelected(selected))
+                            .callbackData("gui:" + exchanges.toMutableSet().apply {
+                                if (selected) {
+                                    remove(exchange)
+                                } else {
+                                    add(exchange)
+                                }
+                            }.joinToString(","))
+                            .build()
+                    }
+                }.forEach(::keyboardRow)
+                keyboardRow(mutableListOf(buttonsService.backButton()))
+                build()
             }
         )
     }
 
     override fun update(user: BotUser): Boolean {
-        val text = user.message
+        val (text, gui) = if (user.message.startsWith("gui:"))
+            user.message.substringAfter("gui:") to true else user.message to false
         val currentExchanges = searchSettings.exchanges
         val inputExchanges = text.split(Regex("[^a-zA-Z0-9]+"))
 
@@ -69,6 +90,10 @@ class ExchangesDialog : Dialog {
         }
         searchSettings.exchanges = newExchanges
         searchSettingsRepository.save(searchSettings)
+        if (gui) {
+            start(user, listOf())
+            return true
+        }
         user.sendMessage("\uD83E\uDE99 Установлены биржи " +
                 "[<code>${newExchanges.joinToString(", ")}</code>]")
         commandService.back(user)

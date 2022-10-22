@@ -67,6 +67,8 @@ class UserService {
         createDefaultSearchSettings(),
         createDefaultSearchSettings(),
         createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
+        createDefaultSearchSettings(),
     )
 
     fun syncUser(userId: Long, login: String?, chatId: Long): ServiceUser = userRepository.findById(userId).orElseGet {

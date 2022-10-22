@@ -8,6 +8,7 @@ import kotlin.math.min
 import kotlin.math.round
 
 fun <T> String.checkIfSelected(selected: T, other: T) = if (selected == other) "✓ $this" else this
+fun String.checkIfSelected(selected: Boolean) = if (selected) "✓ $this" else this
 
 object Utils {
     val base62 = Base62.createInstance()

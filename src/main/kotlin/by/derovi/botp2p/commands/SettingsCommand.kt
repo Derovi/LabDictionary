@@ -58,15 +58,30 @@ class SettingsCommand : Command {
                             InlineKeyboardButton.builder().text("\uD83E\uDE99 Токены").callbackData("/tokens").build(),
                             InlineKeyboardButton.builder().text("\uD83D\uDCB3 Карточки").callbackData("/banks").build()
                         )
+                    ).keyboardRow(
+                        mutableListOf(
+                            InlineKeyboardButton.builder().text("\uD83D\uDCE5 Импорт").callbackData("/import?0").build(),
+                            InlineKeyboardButton.builder().text("\uD83D\uDCE4 Экспорт").callbackData("/export?0").build()
+                        )
                     )
                     SettingsMode.BUY_SELL -> keyboardRow(
                         mutableListOf(
                             InlineKeyboardButton.builder()
                                 .text("➡ Покупка")
-                                .callbackData("/searchsettings?true").build(),
+                                .callbackData("/searchsettings?1").build(),
                             InlineKeyboardButton.builder()
                                 .text("⬅ Продажа")
-                                .callbackData("/searchsettings?false").build()
+                                .callbackData("/searchsettings?2").build()
+                        )
+                    )
+                    SettingsMode.TAKER_MAKER -> keyboardRow(
+                        mutableListOf(
+                            InlineKeyboardButton.builder()
+                                .text("⬇️ Тейкер")
+                                .callbackData("/searchsettings?3").build(),
+                            InlineKeyboardButton.builder()
+                                .text("⬆️ Мейкер")
+                                .callbackData("/searchsettings?4").build()
                         )
                     )
                     SettingsMode.BUY_SELL_TAKER_MAKER -> {
@@ -74,20 +89,20 @@ class SettingsCommand : Command {
                             mutableListOf(
                                 InlineKeyboardButton.builder()
                                     .text("↘ Покупка-Тейкер")
-                                    .callbackData("/searchsettings?true&true").build(),
+                                    .callbackData("/searchsettings?5").build(),
                                 InlineKeyboardButton.builder()
                                     .text("↙ Продажа-Тейкер")
-                                    .callbackData("/searchsettings?false&true").build()
+                                    .callbackData("/searchsettings?6").build()
                             )
                         )
                         keyboardRow(
                             mutableListOf(
                                 InlineKeyboardButton.builder()
                                     .text("↗ Покупка-Мейкер")
-                                    .callbackData("/searchsettings?true&false").build(),
+                                    .callbackData("/searchsettings?7").build(),
                                 InlineKeyboardButton.builder()
                                     .text("↖ Продажа-Мейкер")
-                                    .callbackData("/searchsettings?false&false").build()
+                                    .callbackData("/searchsettings?8").build()
                             )
                         )
                     }

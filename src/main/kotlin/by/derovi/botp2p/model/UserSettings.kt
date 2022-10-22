@@ -21,23 +21,28 @@ data class UserSettings(
     var chosenCurrency: Currency?,
     var settingsMode: SettingsMode,
     @OneToOne
-    var commonSettings: SearchSettings,
+    var commonSettings: SearchSettings, // 0
     @OneToOne
-    var buySettings: SearchSettings,
+    var buySettings: SearchSettings, // 1
     @OneToOne
-    var sellSettings: SearchSettings,
+    var sellSettings: SearchSettings, // 2
     @OneToOne
-    val buyTakerSettings: SearchSettings,
+    val takerSettings: SearchSettings, // 3
     @OneToOne
-    val sellTakerSettings: SearchSettings,
+    val makerSettings: SearchSettings, // 4
     @OneToOne
-    val buyMakerSettings: SearchSettings,
+    val buyTakerSettings: SearchSettings, // 5
     @OneToOne
-    val sellMakerSettings: SearchSettings
+    val sellTakerSettings: SearchSettings, // 6
+    @OneToOne
+    val buyMakerSettings: SearchSettings, // 7
+    @OneToOne
+    val sellMakerSettings: SearchSettings // 8
 ) {
     fun getSearchSettings(buy: Boolean, taker: Boolean) =
         when (settingsMode) {
             SettingsMode.STANDARD -> commonSettings
+            SettingsMode.TAKER_MAKER -> if (buy) takerSettings else makerSettings
             SettingsMode.BUY_SELL -> if (buy) buySettings else sellSettings
             SettingsMode.BUY_SELL_TAKER_MAKER -> when(buy to taker) {
                 true to true -> buyTakerSettings
