@@ -155,14 +155,14 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                 if (checkRestrictions(true, true, paymentMethod)) {
                     buyOffersTaker.addAll(it) // buy taker
                 }
-                if (tradingMode != TradingMode.TAKER_TAKER && it.isNotEmpty()) {
+                if ((tradingMode == TradingMode.TAKER_MAKER || tradingMode == TradingMode.MAKER_MAKER) && it.isNotEmpty()) {
                     if (checkRestrictions(false, false, paymentMethod)) {
                         sellOffersMaker.addAll(it.take(1)) // sell maker
                     }
                 }
             }
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
-                if (tradingMode == TradingMode.MAKER_MAKER && it.isNotEmpty()) {
+                if ((tradingMode == TradingMode.MAKER_TAKER || tradingMode == TradingMode.MAKER_MAKER) && it.isNotEmpty()) {
                     if (checkRestrictions(true, false, paymentMethod)) {
                         buyOffersMaker.addAll(it.take(1)) // buy maker
                     }
@@ -181,7 +181,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
 
         return ((if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.TAKER_MAKER)
             buyOffersTaker else buyOffersMaker)
-        to (if (tradingMode == TradingMode.TAKER_TAKER)
+        to (if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.MAKER_TAKER)
             sellOffersTaker else sellOffersMaker))
     }
 

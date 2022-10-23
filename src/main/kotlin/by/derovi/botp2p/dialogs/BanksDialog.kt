@@ -77,6 +77,12 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
                 }
             )
             this.currency = currency
+            if (currency != Currency.RUB) {
+                user.sendMessageWithBackButton(
+                    "Поддержка <b>$currency</b> скоро!"
+                )
+                return false
+            }
             state = State.CARDS
             return true
         } else {

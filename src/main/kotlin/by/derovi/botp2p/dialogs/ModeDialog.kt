@@ -45,6 +45,8 @@ class ModeDialog : Dialog {
                 )).keyboardRow(mutableListOf(
                     buttonForMode(TradingMode.TAKER_MAKER),
                 )).keyboardRow(mutableListOf(
+                    buttonForMode(TradingMode.MAKER_TAKER),
+                )).keyboardRow(mutableListOf(
                     buttonForMode(TradingMode.MAKER_MAKER),
                 )).build()
         )
