@@ -64,7 +64,12 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
                 user.sendMessage("\uD83D\uDCB3️ Валюта <b>\"${user.message}\"</b> не найдена!")
                 return false
             }
-
+            if (currency != Currency.RUB) {
+                user.sendMessageWithBackButton(
+                    "Поддержка <b>$currency</b> скоро!"
+                )
+                return false
+            }
             user.sendMessageWithBackButton(
                 with(StringBuilder()) {
                     append("\uD83D\uDCB3 Карточки <b>${currency.name}</b>\n")
@@ -83,12 +88,6 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
                 }
             )
             this.currency = currency
-            if (currency != Currency.RUB) {
-                user.sendMessageWithBackButton(
-                    "Поддержка <b>$currency</b> скоро!"
-                )
-                return false
-            }
             state = State.CARDS
             return true
         } else {
