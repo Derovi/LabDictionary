@@ -39,15 +39,15 @@ class PricesCommand : Command {
         showFull: Boolean,
         buy: Boolean,
         taker: Boolean,
-        exchange: Exchange?,
-        token: Token?,
+        exchanges: List<Exchange>?,
+        tokens: List<Token>?,
         command: String?,
         pinnedBuyToken: Token?,
         pinnedBuyPrice: Double?,
         pinnedSellToken: Token?,
         pinnedSellPrice: Double?
     ) = context.getBean(CommandService::class.java).manageCommandUrl(
-        "/prices?$showFull&$buy&$taker&${exchange?.name()}&$token&${command}&$pinnedBuyToken,$pinnedBuyPrice&$pinnedSellToken,$pinnedSellPrice")
+        "/prices?$showFull&$buy&$taker&${exchanges?.map(Exchange::name)?.joinToString(",")}&${tokens?.map(Token::name)?.joinToString(",")}&${command}&$pinnedBuyToken,$pinnedBuyPrice&$pinnedSellToken,$pinnedSellPrice")
 
 //    fun url(
 //        showFull: Boolean,
@@ -68,12 +68,12 @@ class PricesCommand : Command {
         val buy = args.getOrNull(1)?.toBooleanStrictOrNull() ?: true
         val taker = args.getOrNull(2)?.toBooleanStrictOrNull() ?: true
 
-        val chosenExchange = args.getOrNull(3)?.let { chosenExchange ->
-            bundleSearch.commonExchanges.find { it.name().equals(chosenExchange, ignoreCase = true) }
-        }
-        val chosenToken = args.getOrNull(4)?.let { chosenToken ->
-            Token.values().find { it.name.equals(chosenToken, ignoreCase = true) }
-        }
+        val chosenExchanges = args.getOrNull(3)?.split(",")?.map { exchange ->
+            bundleSearch.commonExchanges.find { it.name().equals(exchange, ignoreCase = true) }
+        }?.filterNotNull()?.ifEmpty { null }
+        val chosenTokens = args.getOrNull(4)?.split(",")?.map { token ->
+            Token.values().find { it.name.equals(token, ignoreCase = true) }
+        }?.filterNotNull()?.ifEmpty { null }
         val command = args.getOrNull(5)
         fun parseParams(params: List<String>?): Pair<Token?, Double?> {
             if (params == null || params.size != 2) return null to null
@@ -92,8 +92,8 @@ class PricesCommand : Command {
             user.serviceUser,
             buy,
             taker,
-            chosenExchange,
-            chosenToken
+            chosenExchanges,
+            chosenTokens
         )
 
         val currency = Currency.RUB
@@ -111,8 +111,8 @@ class PricesCommand : Command {
                             showFull,
                             false,
                             taker,
-                            chosenExchange,
-                            chosenToken,
+                            chosenExchanges,
+                            chosenTokens,
                             null,
                             null,
                             null,
@@ -129,8 +129,8 @@ class PricesCommand : Command {
                                 showFull,
                                 false,
                                 taker,
-                                chosenExchange,
-                                chosenToken,
+                                chosenExchanges,
+                                chosenTokens,
                                 null,
                                 pinnedBuyToken,
                                 pinnedBuyPrice,
@@ -176,8 +176,8 @@ class PricesCommand : Command {
                                 showFull,
                                 false,
                                 taker,
-                                chosenExchange,
-                                chosenToken,
+                                chosenExchanges,
+                                chosenTokens,
                                 null,
                                 offer.token,
                                 offer.price,
@@ -194,8 +194,8 @@ class PricesCommand : Command {
                                 showFull,
                                 true,
                                 taker,
-                                chosenExchange,
-                                chosenToken,
+                                chosenExchanges,
+                                chosenTokens,
                                 null,
                                 pinnedBuyToken,
                                 pinnedBuyPrice,
@@ -240,13 +240,13 @@ class PricesCommand : Command {
             },
             with(InlineKeyboardMarkup.builder()) {
                 val cancelButton = InlineKeyboardButton.builder()
-                    .text("↩️ Отмена")
+                    .text("↩️ Выбрать")
                     .callbackData(url(
                         showFull,
                         buy,
                         taker,
-                        chosenExchange,
-                        chosenToken,
+                        chosenExchanges,
+                        chosenTokens,
                         null,
                         pinnedBuyToken,
                         pinnedBuyPrice,
@@ -255,17 +255,25 @@ class PricesCommand : Command {
                     )).build()
                 when(command) {
                     "chooseexchange" -> {
+                        val exchanges = chosenExchanges ?: listOf()
                         bundleSearch.commonExchanges.asSequence().chunked(3).map {
                             it.map { exchange ->
+                                val selected = exchange in exchanges
                                 InlineKeyboardButton.builder()
-                                    .text(exchange.name())
+                                    .text(exchange.name().checkIfSelected(selected))
                                     .callbackData(url(
                                         showFull,
                                         buy,
                                         taker,
-                                        exchange,
-                                        chosenToken,
-                                        null,
+                                        exchanges.toMutableList().apply {
+                                            if (selected) {
+                                                remove(exchange)
+                                            } else {
+                                                add(exchange)
+                                            }
+                                        },
+                                        chosenTokens,
+                                        "chooseexchange",
                                         pinnedBuyToken,
                                         pinnedBuyPrice,
                                         pinnedSellToken,
@@ -276,17 +284,25 @@ class PricesCommand : Command {
                         keyboardRow(mutableListOf(cancelButton))
                     }
                     "choosetoken" -> {
+                        val tokens = chosenTokens ?: listOf()
                         Token.values().asSequence().chunked(4).map {
                             it.map { token ->
+                                val selected = token in tokens
                                 InlineKeyboardButton.builder()
-                                    .text(token.name)
+                                    .text(token.name.checkIfSelected(selected))
                                     .callbackData(url(
                                         showFull,
                                         buy,
                                         taker,
-                                        chosenExchange,
-                                        token,
-                                        null,
+                                        chosenExchanges,
+                                        tokens.toMutableList().apply {
+                                            if (selected) {
+                                                remove(token)
+                                            } else {
+                                                add(token)
+                                            }
+                                         },
+                                        "choosetoken",
                                         pinnedBuyToken,
                                         pinnedBuyPrice,
                                         pinnedSellToken,
@@ -305,8 +321,8 @@ class PricesCommand : Command {
                                     showFull,
                                     buy,
                                     taker,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -319,8 +335,8 @@ class PricesCommand : Command {
                                         true,
                                         buy,
                                         taker,
-                                        chosenExchange,
-                                        chosenToken,
+                                        chosenExchanges,
+                                        chosenTokens,
                                         null,
                                         pinnedBuyToken,
                                         pinnedBuyPrice,
@@ -333,8 +349,8 @@ class PricesCommand : Command {
                                         false,
                                         buy,
                                         taker,
-                                        chosenExchange,
-                                        chosenToken,
+                                        chosenExchanges,
+                                        chosenTokens,
                                         null,
                                         pinnedBuyToken,
                                         pinnedBuyPrice,
@@ -352,8 +368,8 @@ class PricesCommand : Command {
                                     showFull,
                                     true,
                                     taker,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -366,8 +382,8 @@ class PricesCommand : Command {
                                 .callbackData(url(showFull,
                                     false,
                                     taker,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -382,8 +398,8 @@ class PricesCommand : Command {
                                 .callbackData(url(showFull,
                                     buy,
                                     true,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -396,8 +412,8 @@ class PricesCommand : Command {
                                 .callbackData(url(showFull,
                                     buy,
                                     false,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -408,13 +424,13 @@ class PricesCommand : Command {
                         keyboardRow(listOf(
                             InlineKeyboardButton
                                 .builder()
-                                .text("\uD83D\uDCB1 Все биржи".checkIfSelected(chosenExchange == null))
+                                .text("\uD83D\uDCB1 Все биржи".checkIfSelected(chosenExchanges == null))
                                 .callbackData(url(
                                     showFull,
                                     buy,
                                     taker,
                                     null,
-                                    chosenToken,
+                                    chosenTokens,
                                     null,
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -423,13 +439,15 @@ class PricesCommand : Command {
                                 )).build(),
                             InlineKeyboardButton
                                 .builder()
-                                .text(if (chosenExchange == null) " Выбрать биржу" else "✓ \uD83D\uDCB1 Выбрать [${chosenExchange.name()}]")
+                                .text(if (chosenExchanges == null) " Выбрать биржу" else "✓ \uD83D\uDCB1 Выбрать [${chosenExchanges.first().name()}" +
+                                        (if (chosenExchanges.size > 1) "+${chosenExchanges.size - 1}" else "")
+                                        + "]")
                                 .callbackData(url(
                                     showFull,
                                     buy,
                                     taker,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     "chooseexchange",
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
@@ -440,12 +458,12 @@ class PricesCommand : Command {
                         keyboardRow(listOf(
                             InlineKeyboardButton
                                 .builder()
-                                .text("\uD83E\uDE99 Все токены".checkIfSelected(chosenToken == null))
+                                .text("\uD83E\uDE99 Все токены".checkIfSelected(chosenTokens == null))
                                 .callbackData(url(
                                     showFull,
                                     buy,
                                     taker,
-                                    chosenExchange,
+                                    chosenExchanges,
                                     null,
                                     null,
                                     pinnedBuyToken,
@@ -455,13 +473,15 @@ class PricesCommand : Command {
                                 )).build(),
                             InlineKeyboardButton
                                 .builder()
-                                .text(if (chosenToken == null) " Выбрать токен" else "✓ \uD83E\uDE99 Выбрать [${chosenToken.name}]")
+                                .text(if (chosenTokens == null) " Выбрать токен" else "✓ \uD83E\uDE99 Выбрать [${chosenTokens.first().name}" +
+                                        (if (chosenTokens.size > 1) "+${chosenTokens.size - 1}" else "")
+                                        + "]")
                                 .callbackData(url(
                                     showFull,
                                     buy,
                                     taker,
-                                    chosenExchange,
-                                    chosenToken,
+                                    chosenExchanges,
+                                    chosenTokens,
                                     "choosetoken",
                                     pinnedBuyToken,
                                     pinnedBuyPrice,
