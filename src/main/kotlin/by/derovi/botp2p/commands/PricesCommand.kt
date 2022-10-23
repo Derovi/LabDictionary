@@ -226,9 +226,14 @@ class PricesCommand : Command {
                 for ((groupIdx, group) in groupedOffers.withIndex()) {
                     for ((offerIdx, offer) in group.withIndex()) {
                         if (++idx > limit) break
-                        append("<b>${groupIdx + 1}${('а'.toInt() + offerIdx).toChar()}</b>. ")
+                        if (offerIdx == 0) {
+                            append("<b>${groupIdx + 1}</b>. ")
+                        } else {
+                            append("    ")
+                        }
                         appendForOffer(offer)
                     }
+                    append("\n")
                 }
             }
             toString()
