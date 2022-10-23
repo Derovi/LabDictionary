@@ -54,6 +54,7 @@ class UserService {
     fun defaultSettings() = UserSettings(
         1.0,
         true,
+        true,
         TradingMode.TAKER_TAKER,
         null,
         50,

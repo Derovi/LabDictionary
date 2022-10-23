@@ -8,7 +8,8 @@ import javax.persistence.*
 
 @Embeddable
 data class UserSettings(
-    var notificationThreshold: Double?, // 0 - 100 percent
+    var notificationThreshold: Double, // 0 - 100 percent
+    var notificationsOn: Boolean,
     var useSpot: Boolean,
     @Enumerated(value = EnumType.STRING)
     var tradingMode: TradingMode,

@@ -113,7 +113,7 @@ class SearchSettingsCommand : Command {
                         searchSettings.tokens.map(Token::readableName).joinToString(", ")
                     }</code>]\n"
                 )
-                append("\uD83D\uDCB3 Карточки\n")
+                append("\uD83D\uDCB3 Платежки\n")
                 if (settings.settingsMode == SettingsMode.STANDARD) {
                     searchSettings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
                         append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
@@ -130,7 +130,7 @@ class SearchSettingsCommand : Command {
                         .text("\uD83E\uDE99 Токены")
                         .callbackData("/tokens?$settingsIdx").build(),
                     InlineKeyboardButton.builder()
-                        .text("\uD83D\uDCB3 Карточки")
+                        .text("\uD83D\uDCB3 Платежки")
                         .callbackData("/banks?$settingsIdx").build()
                 )).keyboardRow(mutableListOf(
                     InlineKeyboardButton.builder().text("\uD83D\uDCE5 Импорт").callbackData("/import?$settingsIdx").build(),

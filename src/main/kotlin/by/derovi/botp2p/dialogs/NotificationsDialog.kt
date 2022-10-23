@@ -22,8 +22,8 @@ class NotificationsDialog : Dialog {
     lateinit var buttonsService: ButtonsService
 
     companion object {
-        fun notificationsTitle(threshold: Double?, text: String = "Уведомления") =
-            "\uD83D\uDD14 $text [<b>${if (threshold == null) "Отключены" else "от $threshold%"}</b>]"
+        fun notificationsTitle(notificationsOn: Boolean, threshold: Double, text: String = "Уведомления") =
+            "\uD83D\uDD14 $text [<b>${if (!notificationsOn) "Отключены" else "от $threshold%"}</b>]"
     }
 
     @Autowired
@@ -31,18 +31,28 @@ class NotificationsDialog : Dialog {
     override fun start(user: BotUser, args: List<String>) {
         user.sendMessage(
             buildString {
-                append("${notificationsTitle(user.serviceUser.userSettings.notificationThreshold)}\n")
+                append("${notificationsTitle(
+                    user.serviceUser.userSettings.notificationsOn,
+                    user.serviceUser.userSettings.notificationThreshold)}\n")
                 append("Вы будете получать уведомления о <b>Тейкер-Тейкер</b> связках со спредом <b>не меньше</b> указанного\n")
                 append("<i>Введите число</i>")
                 toString()
             },
             with(InlineKeyboardMarkup.builder()) {
                 keyboardRow(listOf(
-                    InlineKeyboardButton
-                        .builder()
-                        .text("\uD83D\uDEAB Отключить")
-                        .callbackData("off")
-                        .build()
+                    if (user.serviceUser.userSettings.notificationsOn) {
+                        InlineKeyboardButton
+                            .builder()
+                            .text("\uD83D\uDEAB Отключить")
+                            .callbackData("off")
+                            .build()
+                    } else {
+                        InlineKeyboardButton
+                            .builder()
+                            .text("\uD83D\uDFE2 Включить")
+                            .callbackData("on")
+                            .build()
+                    }
                 ))
                 keyboardRow(listOf(buttonsService.backButton()))
                 build()
@@ -53,8 +63,13 @@ class NotificationsDialog : Dialog {
     override fun update(user: BotUser): Boolean {
         val text = user.message.replace(",", ".")
         if (text == "off") {
-            user.serviceUser.userSettings.notificationThreshold = null
+            user.serviceUser.userSettings.notificationsOn = false
             user.sendMessage("\uD83D\uDD14 Уведомления отключены")
+            commandService.back(user)
+            return false
+        } else if (text == "on") {
+            user.serviceUser.userSettings.notificationsOn = true
+            user.sendMessage("\uD83D\uDD14 Уведомления включены")
             commandService.back(user)
             return false
         }
@@ -72,7 +87,9 @@ class NotificationsDialog : Dialog {
 
         user.serviceUser.userSettings.notificationThreshold = percent
         user.sendMessage(
-            notificationsTitle(user.serviceUser.userSettings.notificationThreshold, text = "Установлены уведомления")
+            notificationsTitle(
+                user.serviceUser.userSettings.notificationsOn,
+                user.serviceUser.userSettings.notificationThreshold, text = "Установлены уведомления")
         )
         commandService.back(user)
         return false

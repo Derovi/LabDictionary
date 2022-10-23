@@ -41,7 +41,7 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
 
         user.sendMessage(
             buildString {
-                append("\uD83D\uDCB3️ Карточки\n")
+                append("\uD83D\uDCB3️ Платежки\n")
                 append("Выберите валюту")
                 toString()
             },
@@ -72,7 +72,7 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
             }
             user.sendMessageWithBackButton(
                 with(StringBuilder()) {
-                    append("\uD83D\uDCB3 Карточки <b>${currency.name}</b>\n")
+                    append("\uD83D\uDCB3 Платежки <b>${currency.name}</b>\n")
                     val currentPaymentMethods = searchSettings.paymentMethodsAsMap[currency]?.sortedBy { it.name }
                     val availablePaymentMethods = PaymentMethod.values().sortedBy { it.name }
                     if (currentPaymentMethods != null && currentPaymentMethods.isNotEmpty()) {

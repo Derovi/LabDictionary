@@ -34,11 +34,11 @@ class SettingsCommand : Command {
                     )
                 }
                 append(if (settings.useSpot) "\uD83D\uDFE2 Спот [<b>Включен</b>]\n" else "\uD83D\uDD34 Спот [<b>Выключен</b>]\n")
-                append("${NotificationsDialog.notificationsTitle(settings.notificationThreshold)}\n")
+                append("${NotificationsDialog.notificationsTitle(settings.notificationsOn, settings.notificationThreshold)}\n")
                 append("\uD83D\uDCB5 Минимальный объем [${settings.minimumValue} usdt]\n")
                 append("\uD83D\uDCB0 Рабочий объем [${settings.workValue} usdt]\n")
                 append("\uD83D\uDC65 Режим торговли [<b>${settings.tradingMode.readableName}</b>]\n")
-                append("\uD83D\uDCB3 Карточки\n")
+                append("\uD83D\uDCB3 Платежки\n")
                 if (settings.settingsMode == SettingsMode.STANDARD) {
                     settings.commonSettings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
                         append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
@@ -56,7 +56,7 @@ class SettingsCommand : Command {
                             InlineKeyboardButton.builder().text("\uD83D\uDCB1 Биржи").callbackData("/exchanges")
                                 .build(),
                             InlineKeyboardButton.builder().text("\uD83E\uDE99 Токены").callbackData("/tokens").build(),
-                            InlineKeyboardButton.builder().text("\uD83D\uDCB3 Карточки").callbackData("/banks").build()
+                            InlineKeyboardButton.builder().text("\uD83D\uDCB3 Платежки").callbackData("/banks").build()
                         )
                     ).keyboardRow(
                         mutableListOf(
@@ -113,7 +113,7 @@ class SettingsCommand : Command {
                         .callbackData("/spot").build(),
                     InlineKeyboardButton.builder()
                         .text(settings.notificationThreshold.let {
-                            "\uD83D\uDD14 Уведомления [${if (it == null) "Откл." else "от $it%"}]"
+                            "\uD83D\uDD14 Уведомления [${if (!settings.notificationsOn) "Откл." else "от $it%"}]"
                         })
                         .callbackData("/notifications").build(),
                 ))
