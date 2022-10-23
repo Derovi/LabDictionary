@@ -26,6 +26,7 @@ class BotUser(
     var context: ApplicationContext
 ) {
     val bot = context.getBean(Bot::class.java)
+    var messagesSent = 0L
     val bundlesService = context.getBean(BundlesService::class.java)
 //    val screenService = context.getBean(ScreenService::class.java)
     var messageSent: Boolean = false
@@ -84,10 +85,8 @@ class BotUser(
             message.replyMarkup = keyboard
             message.parseMode = "HTML"
             message.disableWebPagePreview()
-            thread {
-                try {
-                    bot.execute(message)
-                } catch (_: Exception) {}
+            tgRequest {
+                bot.execute(message)
             }
         } else {
             val message = SendMessage()
@@ -98,11 +97,20 @@ class BotUser(
             message.replyMarkup = keyboard
             message.parseMode = "HTML"
             message.disableWebPagePreview()
-            thread {
+            tgRequest {
                 bot.execute(message)
             }
         }
         messageSent = true
+    }
+
+    fun tgRequest(request: () -> Unit) {
+        thread {
+            try {
+                Thread.sleep(100 * messagesSent++)
+                request()
+            } catch (_: Exception) {}
+        }
     }
 
     val id = serviceUser.userId

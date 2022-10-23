@@ -33,7 +33,7 @@ class NotificationsService {
         for (user in userRepository.findAll()) {
             val threshold = user.userSettings.notificationThreshold
             if (threshold == null
-                || (userService.userIdToLastAction[user.userId] ?: 0) + 10 * 1000L > System.currentTimeMillis()
+                || (userService.userIdToLastAction[user.userId] ?: 0) + 20 * 1000L > System.currentTimeMillis()
                 || dialogService.isDialogActive(user.userId)
             ) {
                 continue

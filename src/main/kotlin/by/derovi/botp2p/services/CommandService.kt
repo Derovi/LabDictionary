@@ -73,11 +73,16 @@ class CommandService {
         val arguments = fullCommand.substringAfter("?").split("&")
 
         if (!commands.containsKey(name)) {
-            botUser.sendMessage("<b>Команда</b> <i>$name</i> <b>не найдена</b>!",
-                InlineKeyboardMarkup.builder().keyboardRow(mutableListOf(
-                    InlineKeyboardButton.builder().text("На главную").callbackData("/start").build()
-                )).build()
-            )
+            if (name.startsWith("/")) {
+                botUser.sendMessage(
+                    "<b>Команда</b> <i>$name</i> <b>не найдена</b>!",
+                    InlineKeyboardMarkup.builder().keyboardRow(
+                        mutableListOf(
+                            InlineKeyboardButton.builder().text("На главную").callbackData("/start").build()
+                        )
+                    ).build()
+                )
+            }
             return
         }
         val command = commands[name]!!

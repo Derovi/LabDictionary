@@ -6,6 +6,7 @@ import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
 import by.derovi.botp2p.model.SearchSettings
 import by.derovi.botp2p.model.SearchSettingsRepository
+import by.derovi.botp2p.services.ButtonsService
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -18,6 +19,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 class BanksDialog(var state: State = State.CURRENCY) : Dialog {
     @Autowired
     lateinit var bundleSearch: BundleSearch
+
+    @Autowired
+    lateinit var buttonsService: ButtonsService
 
     @Autowired
     lateinit var searchSettingsRepository: SearchSettingsRepository
@@ -41,11 +45,13 @@ class BanksDialog(var state: State = State.CURRENCY) : Dialog {
                 append("Выберите валюту")
                 toString()
             },
-            InlineKeyboardMarkup.builder().keyboardRow(
-                Currency.values().map(Currency::name).map {
+            with(InlineKeyboardMarkup.builder()) {
+                keyboardRow(Currency.values().map(Currency::name).map {
                     InlineKeyboardButton.builder().text(it).callbackData(it).build()
-                }
-            ).build()
+                })
+                keyboardRow(mutableListOf(buttonsService.backButton()))
+                build()
+            }
         )
     }
 

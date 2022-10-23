@@ -4,6 +4,7 @@ import by.derovi.botp2p.BotUser
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.model.CurrencyAndPaymentMethod
 import by.derovi.botp2p.model.SettingsMode
+import by.derovi.botp2p.services.ButtonsService
 import by.derovi.botp2p.services.CommandService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Scope
@@ -19,6 +20,9 @@ class SettingsModeDialog : Dialog {
 
     @Autowired
     lateinit var commandService: CommandService
+
+    @Autowired
+    lateinit var buttonsService: ButtonsService
 
     lateinit var currency: Currency
     override fun start(user: BotUser, args: List<String>) {
@@ -45,6 +49,7 @@ class SettingsModeDialog : Dialog {
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL)))
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.TAKER_MAKER)))
                 keyboardRow(mutableListOf(buttonForMode(SettingsMode.BUY_SELL_TAKER_MAKER)))
+                keyboardRow(mutableListOf(buttonsService.backButton()))
                 build()
             }
         )
