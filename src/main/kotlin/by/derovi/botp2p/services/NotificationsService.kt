@@ -32,7 +32,7 @@ class NotificationsService {
         val newUserIdToLastBundles = mutableMapOf<Long, List<BundleKey>>()
         for (user in userRepository.findAll()) {
             val threshold = user.userSettings.notificationThreshold
-            if (user.userSettings.notificationsOn
+            if (!user.userSettings.notificationsOn
                 || (userService.userIdToLastAction[user.userId] ?: 0) + 20 * 1000L > System.currentTimeMillis()
                 || dialogService.isDialogActive(user.userId)
             ) {

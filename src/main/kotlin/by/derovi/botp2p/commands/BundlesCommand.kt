@@ -127,7 +127,7 @@ class BundlesCommand : Command {
                 if (nextBuyIdx != null) {
                     columns2.add(
                         InlineKeyboardButton.builder()
-                            .text("⏩ Другая покупка")
+                            .text("⏩ Др. покупка")
                             .callbackData("/bundles?$nextBuyIdx&$ttOnly&false")
                             .build()
                     )
@@ -143,7 +143,7 @@ class BundlesCommand : Command {
                 if (nextSellIdx != null) {
                     columns2.add(
                         InlineKeyboardButton.builder()
-                            .text("⏩ Другая продажа")
+                            .text("⏩ Др. продажа")
                             .callbackData("/bundles?$nextSellIdx&$ttOnly&false")
                             .build()
                     )
