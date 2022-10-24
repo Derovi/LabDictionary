@@ -26,7 +26,7 @@ class PromoService {
     @Autowired
     lateinit var userService: UserService
 
-    val referReward = 0.2
+    val referReward = 0.1
     val referDiscount = 0.0
     fun getPromo(id: String): Promo? = promoRepository.findById(id).orElse(null)
 
