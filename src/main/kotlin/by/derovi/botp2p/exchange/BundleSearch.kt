@@ -177,8 +177,6 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         sellOffersTaker.sortByDescending { it.price }
         buyOffersMaker.sortByDescending { it.price }
         sellOffersMaker.sortBy { it.price }
-        buyOffersMaker.addAll(buyOffersTaker)
-        sellOffersMaker.addAll(sellOffersTaker)
         //merge
 
         return ((if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.TAKER_MAKER)
