@@ -1,6 +1,6 @@
 package by.derovi.botp2p.exchange
 
-class Offer(val price: Double,
+data class Offer(val price: Double,
             val token: Token,
             val orderType: OrderType,
             val available: Double /* token */,

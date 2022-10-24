@@ -1,6 +1,7 @@
 package by.derovi.botp2p.exchange
 
 import by.derovi.botp2p.exchange.exchanges.Binance
+import by.derovi.botp2p.exchange.exchanges.Bybit
 import by.derovi.botp2p.library.PoolWithRetries
 import by.derovi.botp2p.model.Maker
 import by.derovi.botp2p.model.SearchSettings
@@ -157,14 +158,14 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                 }
                 if ((tradingMode == TradingMode.TAKER_MAKER || tradingMode == TradingMode.MAKER_MAKER) && it.isNotEmpty()) {
                     if (checkRestrictions(false, false, paymentMethod)) {
-                        sellOffersMaker.addAll(it.take(1)) // sell maker
+                        sellOffersMaker.addAll(it.take(3)) // sell maker
                     }
                 }
             }
             setupToOffers[Setup(token, currency, exchange, paymentMethod, OrderType.SELL)]?.filter(::criteria)?.let {
                 if ((tradingMode == TradingMode.MAKER_TAKER || tradingMode == TradingMode.MAKER_MAKER) && it.isNotEmpty()) {
                     if (checkRestrictions(true, false, paymentMethod)) {
-                        buyOffersMaker.addAll(it.take(1)) // buy maker
+                        buyOffersMaker.addAll(it.take(3)) // buy maker
                     }
                 }
                 if (checkRestrictions(false, true, paymentMethod)) {
@@ -173,16 +174,12 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             }
         }
 
-        buyOffersTaker.sortBy { it.price }
-        sellOffersTaker.sortByDescending { it.price }
-        buyOffersMaker.sortByDescending { it.price }
-        sellOffersMaker.sortBy { it.price }
-        //merge
-
         return ((if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.TAKER_MAKER)
-            buyOffersTaker else buyOffersMaker)
+            buyOffersTaker.asSequence().sortedBy { it.price }.distinct().toList()
+        else buyOffersMaker.asSequence().sortedByDescending { it.price }.distinct().toList())
         to (if (tradingMode == TradingMode.TAKER_TAKER || tradingMode == TradingMode.MAKER_TAKER)
-            sellOffersTaker else sellOffersMaker))
+            sellOffersTaker.asSequence().sortedByDescending { it.price }.distinct().toList()
+        else sellOffersMaker.asSequence().sortedBy { it.price }.distinct().toList()))
     }
 
     fun <O, T, R> merge(
@@ -341,7 +338,6 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                     if (buyOffers.isEmpty() || sellOffers.isEmpty()) continue
 
                     var bestSpread = Double.NEGATIVE_INFINITY
-                    var bestSpreadWithFee = Double.NEGATIVE_INFINITY
 
                     lateinit var bestTransferGuide: FeesService.TransferGuide
 
@@ -349,8 +345,8 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
 
                     for ((idx1, buyOffer) in buyOffers.withIndex()) {
                         for ((idx2, sellOffer) in sellOffers.withIndex()) {
-                            val buyValue = buyOffer.available
-                            val sellValue = sellOffer.available * spotService.price(token2) / spotService.price(token1)
+                            val buyValue = buyOffer.maxLimit / buyOffer.price
+                            val sellValue = sellOffer.maxLimit / sellOffer.price * spotService.price(token2) / spotService.price(token1)
 
                             val transferGuide = feesService.findTransferGuide(
                                 exchange1,
@@ -363,10 +359,15 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
                             val spreadWithFee = spread - transferGuide.calculateFinalFee()
                             spreadsWithFee[idx1][idx2] = spreadWithFee
 
-                            if (bestSpreadWithFee < spreadWithFee) {
-                                bestSpreadWithFee = spreadWithFee
+                            if (idx1 == 0 && idx2 == 0) {
                                 bestSpread = spread
-                                bestTransferGuide = transferGuide
+                                bestTransferGuide = feesService.findTransferGuide(
+                                    exchange1,
+                                    exchange2,
+                                    token1,
+                                    token2,
+                                    min(buyValue, sellValue)
+                                )
                             }
                         }
                     }
