@@ -80,7 +80,7 @@ class BundlesService {
     )
 
     fun searchBundlesForUser(user: ServiceUser) {
-        val result = bundleSearch.searchBundles(
+        userToBundleSearchResult[user.userId] = bundleSearch.searchBundles(
             searchSettingsMap(user),
             user.userSettings.useSpot,
             user.userSettings.tradingMode,
@@ -89,9 +89,18 @@ class BundlesService {
             user.userSettings.minimumValue,
             user.userSettings.workValue
         )
-        userToBundleSearchResult[user.userId] = result
-        userToBundleSearchResulTT[user.userId] = result.filter {
-            it.buyOffers.first().orderType == OrderType.BUY && it.sellOffers.first().orderType == OrderType.SELL
+        if (user.userSettings.tradingMode == TradingMode.TAKER_TAKER) {
+            userToBundleSearchResulTT[user.userId] = userToBundleSearchResult[user.userId]!!
+        } else {
+            userToBundleSearchResulTT[user.userId] = bundleSearch.searchBundles(
+                searchSettingsMap(user),
+                user.userSettings.useSpot,
+                TradingMode.TAKER_TAKER,
+                user.userSettings.banned,
+                user.userSettings.chosenCurrency,
+                user.userSettings.minimumValue,
+                user.userSettings.workValue
+            )
         }
     }
 
