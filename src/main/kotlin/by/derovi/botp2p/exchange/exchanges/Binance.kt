@@ -89,7 +89,7 @@ object Binance : Exchange {
 
     private val codeToPaymentMethod = mapOf(
         "TinkoffNew" to PaymentMethod.TINKOFF,
-        "RosBank" to PaymentMethod.ROSBANK,
+        "RosBankNew" to PaymentMethod.ROSBANK,
         "RaiffeisenBank" to PaymentMethod.RAIFAIZEN,
         "QIWI" to PaymentMethod.QIWI,
         "PostBankRussia" to PaymentMethod.POSTBANK,

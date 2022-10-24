@@ -32,7 +32,7 @@ object BundlesPreview {
     private fun spreadAndFee(bundle: BundleSearchResult) = buildString {
         val worstSpread = bundle.spreadsWithFee.minOf { row -> row.minOf { number -> number } }
         val fee = Utils.normalizeSpread(bundle.transferGuide.calculateFinalFee())
-        append("\uD83D\uDCC9 Спред: <b>${if (worstSpread < 1e-7) "до " else "${Utils.normalizeSpread(worstSpread)}%-"}${Utils.normalizeSpread(bundle.bestSpread)}%</b>\n")
+        append("\uD83D\uDCC8 Спред: <b>${if (worstSpread < 1e-7) "до " else "${Utils.normalizeSpread(worstSpread)}%-"}${Utils.normalizeSpread(bundle.bestSpread)}%</b>\n")
         if (fee > 0) {
             append("✡️ Комиссия: <b>${fee}%</b>\n")
         }
