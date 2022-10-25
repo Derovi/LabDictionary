@@ -38,8 +38,8 @@ class SettingsCommand : Command {
                 append("\uD83D\uDCB5 Минимальный объем [${settings.minimumValue} usdt]\n")
                 append("\uD83D\uDCB0 Рабочий объем [${settings.workValue} usdt]\n")
                 append("\uD83D\uDC65 Режим торговли [<b>${settings.tradingMode.readableName}</b>]\n")
-                append("\uD83D\uDCB3 Платежки\n")
                 if (settings.settingsMode == SettingsMode.STANDARD) {
+                    append("\uD83D\uDCB3 Платежки\n")
                     settings.commonSettings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
                         append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
                     }

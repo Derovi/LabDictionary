@@ -114,10 +114,8 @@ class SearchSettingsCommand : Command {
                     }</code>]\n"
                 )
                 append("\uD83D\uDCB3 Платежки\n")
-                if (settings.settingsMode == SettingsMode.STANDARD) {
-                    searchSettings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
-                        append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
-                    }
+                searchSettings.paymentMethodsAsMap.map { (currency, paymentMethods) ->
+                    append("<b>${currency.name}</b> [<code>${paymentMethods.joinToString(", ")}</code>]")
                 }
                 toString()
             },
