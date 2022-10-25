@@ -61,7 +61,7 @@ object Bybit : Exchange {
                     paymentMethod,
                     this
                 )
-            }.filter { it.isOnline }
+            }//.filter { it.isOnline }
         }.flatten()
 
     fun requestPayload(token: Token, currency: Currency, orderType: OrderType, page: Int) =
