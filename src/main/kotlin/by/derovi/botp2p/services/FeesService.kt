@@ -104,14 +104,6 @@ class FeesService {
         val transferGuides = listOf(
             TransferGuide(token1, exchange1, value)
                 .add(TransferStep.Change(Token.USDT))
-                .add(TransferStep.Change(token2))
-                .add(TransferStep.Transfer(exchange2)),
-            TransferGuide(token1, exchange1, value)
-                .add(TransferStep.Transfer(exchange2))
-                .add(TransferStep.Change(Token.USDT))
-                .add(TransferStep.Change(token2)),
-            TransferGuide(token1, exchange1, value)
-                .add(TransferStep.Change(Token.USDT))
                 .add(TransferStep.Transfer(exchange2))
                 .add(TransferStep.Change(token2))
         )
