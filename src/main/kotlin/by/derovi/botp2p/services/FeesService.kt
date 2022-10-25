@@ -100,10 +100,20 @@ class FeesService {
         if (exchange1 == exchange2 && token1 == token2) {
             return TransferGuide(token1, exchange1, value)
         }
+        if (exchange1 == exchange2 && token1 != token2) {
+            return TransferGuide(token1, exchange1, value)
+                .add(TransferStep.Change(token2))
+        }
+        if (exchange1 != exchange2 && token1 == token2) {
+            return TransferGuide(token1, exchange1, value)
+                .add(TransferStep.Transfer(exchange2))
+        }
 
         val transferGuides = listOf(
             TransferGuide(token1, exchange1, value)
-                .add(TransferStep.Change(Token.USDT))
+                .add(TransferStep.Change(token2))
+                .add(TransferStep.Transfer(exchange2)),
+            TransferGuide(token1, exchange1, value)
                 .add(TransferStep.Transfer(exchange2))
                 .add(TransferStep.Change(token2))
         )
