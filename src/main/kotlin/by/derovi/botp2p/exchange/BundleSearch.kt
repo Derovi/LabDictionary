@@ -293,7 +293,8 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
             { it.paymentMethodsAsMap.entries },
             { it.stream().collect(Collectors.toMap(
                 Map.Entry<Currency, List<PaymentMethod>>::key,
-                Map.Entry<Currency, List<PaymentMethod>>::value)
+                Map.Entry<Currency, List<PaymentMethod>>::value,
+                { first, second -> first })
             ) }
         )
         val exchanges = merge(
