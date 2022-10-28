@@ -66,7 +66,7 @@ class TicketsCommand : Command {
                     append("<b>").append(ticket.user.userId).append("</b>")
                 }
                 append("\n")
-                append("Адрес: <code>").append(ticket.address).append("</code>\n")
+                append("Адрес TRC-20: <code>").append(ticket.address).append("</code>\n")
                 append("К оплате: <b>").append(ticket.promoPrice).append(" usdt</b>\n")
                 if (ticket.price != ticket.promoPrice) {
                     append("К оплате без скидки: <s>").append(ticket.price).append("</s>\n")
