@@ -424,7 +424,7 @@ class PricesCommand : Command {
                         keyboardRow(listOf(
                             InlineKeyboardButton
                                 .builder()
-                                .text("\uD83D\uDCB1 Все биржи".checkIfSelected(chosenExchanges == null))
+                                .text("\uD83D\uDCB1 Все биржи из ⚙".checkIfSelected(chosenExchanges == null))
                                 .callbackData(url(
                                     showFull,
                                     buy,
@@ -458,7 +458,7 @@ class PricesCommand : Command {
                         keyboardRow(listOf(
                             InlineKeyboardButton
                                 .builder()
-                                .text("\uD83E\uDE99 Все токены".checkIfSelected(chosenTokens == null))
+                                .text("\uD83E\uDE99 Все токены из ⚙".checkIfSelected(chosenTokens == null))
                                 .callbackData(url(
                                     showFull,
                                     buy,
