@@ -18,9 +18,9 @@ class StartCommand : Command {
                 append("<b>\uD83E\uDD16 DEROVI p2p BOT</b> — ")
                 append("Твой помощник в поиске самых лучших связок и больших спредов\n")
                 append("\n")
-                append("\uD83D\uDD0E ").append(Utils.createLink("Краткий обзор", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
-                append("\uD83D\uDCD6 ").append(Utils.createLink("Полная инструкция", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
-                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Гайд по режиму Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
+                append("\uD83D\uDD0E ").append(Utils.createLink("Видео обзор", "https://www.youtube.com/watch?v=pXxxwMqn16o")).append("\n")
+                append("\uD83D\uDCD6 ").append(Utils.createLink("Текстовый обзор", "https://telegra.ph/DEROVI-p2p-BOT-10-30")).append("\n")
+                //append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Гайд по режиму Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
                 append("Поддержка: @deroviAdmin\n")
                 toString()
             },
@@ -31,7 +31,7 @@ class StartCommand : Command {
                 ))
                 keyboardRow(listOf(
                     InlineKeyboardButton.builder().text("⚙️ Настройки").callbackData("/settings").build(),
-                    InlineKeyboardButton.builder().text("\uD83D\uDCD6 Инструкция").url("https://telegra.ph/Tarify-10-10").build(),
+                    InlineKeyboardButton.builder().text("\uD83D\uDCD6 Инструкция").url("https://telegra.ph/DEROVI-p2p-BOT-10-30").build(),
                     InlineKeyboardButton.builder().text("\uD83D\uDC49 Подписка").callbackData("/subscription").build(),
                 ))
                 if (user.isAdmin) {

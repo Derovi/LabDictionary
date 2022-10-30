@@ -15,7 +15,7 @@ class BansCommand : Command {
     @Autowired
     lateinit var context: ApplicationContext
 
-    fun unbanLink(name: String, exchange: String) = "<a href=\"https://t.me/deroviBot?start=${String(Utils.base62.encode("/unban?$name&$exchange".toByteArray()))}\">[unban]</a>"
+    fun unbanLink(name: String, exchange: String) = "<a href=\"https://t.me/deroviBot?start=${String(Utils.base62.encode("/unban?$name&$exchange".toByteArray()))}\">[разблокировать]</a>"
     override fun use(user: BotUser, vararg args: String) {
         user.sendMessageWithBackButton(
             with(StringBuilder()) {
