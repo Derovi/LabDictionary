@@ -21,7 +21,7 @@ class StartCommand : Command {
                 append("\n")
                 append("\uD83D\uDD0E ").append(Utils.createLink("Видео обзор", "https://www.youtube.com/watch?v=pXxxwMqn16o")).append("\n")
                 append("\uD83D\uDCD6 ").append(Utils.createLink("Текстовый обзор", "http://ovi.by/bot")).append("\n")
-//                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
+                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
                 append("Поддержка: @deroviAdmin\n")
                 toString()
             },
