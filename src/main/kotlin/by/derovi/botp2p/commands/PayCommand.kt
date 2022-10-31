@@ -65,7 +65,7 @@ class PayCommand : Command {
                     append("Будет использовано <b>$referBonusUsed usdt</b> от рефералов!\n")
                 }
                 append("Сумма к оплате: <b>${promoPrice} usdt</b>\n")
-                append("Адрес:\n")
+                append("Адрес TRC-20:\n")
                 val ticket = ticketService.createTicket(
                     user.serviceUser,
                     promo,

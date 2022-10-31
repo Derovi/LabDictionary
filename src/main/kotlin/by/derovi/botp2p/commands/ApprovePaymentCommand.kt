@@ -40,7 +40,7 @@ class ApprovePaymentCommand : Command {
 
                 append("Спасибо за оплату!\n")
                 append("Сумма к оплате: <b>\$${ticket.promoPrice} usdt</b>\n")
-                append("Адрес:\n")
+                append("Адрес TRC-20:\n")
                 append("<code>${ticket.address}</code>\n")
                 append("Оплата будет проверена в течение 2 часов\n")
                 append("Поддержка: @deroviAdmin")
