@@ -6,6 +6,7 @@ import by.derovi.botp2p.model.Role
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import java.util.*
 
 @Component
 class StartCommand : Command {
@@ -20,7 +21,7 @@ class StartCommand : Command {
                 append("\n")
                 append("\uD83D\uDD0E ").append(Utils.createLink("Видео обзор", "https://www.youtube.com/watch?v=pXxxwMqn16o")).append("\n")
                 append("\uD83D\uDCD6 ").append(Utils.createLink("Текстовый обзор", "http://ovi.by/bot")).append("\n")
-                //append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Гайд по режиму Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
+                append("\uD83D\uDC68\u200D\uD83D\uDCBB ").append(Utils.createLink("Обзор режима Лучшие цены", "https://www.youtube.com/watch?v=dQw4w9WgXcQ")).append("\n")
                 append("Поддержка: @deroviAdmin\n")
                 toString()
             },
@@ -31,7 +32,7 @@ class StartCommand : Command {
                 ))
                 keyboardRow(listOf(
                     InlineKeyboardButton.builder().text("⚙️ Настройки").callbackData("/settings").build(),
-                    InlineKeyboardButton.builder().text("\uD83D\uDCD6 Инструкция").url("http://ovi.by/bot").build(),
+//                    InlineKeyboardButton.builder().text("\uD83D\uDCD6 Инструкция").url("http://ovi.by/bot").build(),
                     InlineKeyboardButton.builder().text("\uD83D\uDC49 Подписка").callbackData("/subscription").build(),
                 ))
                 if (user.isAdmin) {
