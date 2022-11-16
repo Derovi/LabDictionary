@@ -13,10 +13,11 @@ object BundlesPreview {
         append(way(bundle))
         append(sell(bundle))
         append("\n")
+        append(warning(bundle))
+        append("\n\n")
         append(offers(bundle, 5))
         append("\n")
         append(table(bundle))
-        append(warning(bundle))
         toString()
     }
 

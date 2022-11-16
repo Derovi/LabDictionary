@@ -18,7 +18,7 @@ class PoolWithRetries(nThreads: Int) {
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
-                if (retryTimes < 4) {
+                if (retryTimes < 1) {
                     println("retry! $retryTimes")
                     scheduledCount.incrementAndGet()
                     executor.execute(Task(retryTimes + 1, runnable))
