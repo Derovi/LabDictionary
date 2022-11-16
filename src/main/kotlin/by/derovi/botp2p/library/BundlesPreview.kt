@@ -16,7 +16,22 @@ object BundlesPreview {
         append(offers(bundle, 5))
         append("\n")
         append(table(bundle))
+        append(warning(bundle))
         toString()
+    }
+
+    val link = Utils.createLink("хеджировать", "http://ovi.by/bot/#%D1%85%D0%B5%D0%B4%D0%B6%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5")
+
+    fun warning(bundle: BundleSearchResult) = buildString {
+        val hedgeBuy = !bundle.buyToken.isStable()
+        val hedgeSell = !bundle.sellToken.isStable() && bundle.sellOffers.first().orderType == OrderType.BUY
+        if (hedgeBuy || hedgeSell) {
+            append("<i>Не забывайте </i>$link ")
+            if (hedgeBuy) append("<i>покупку</i>")
+            if (hedgeBuy && hedgeSell) append("<i> и </i>")
+            if (hedgeSell) append("<i>продажу</i>")
+            append("<i>!</i>")
+        }
     }
 
     fun preview(bundle: BundleSearchResult) = with(StringBuilder()) {

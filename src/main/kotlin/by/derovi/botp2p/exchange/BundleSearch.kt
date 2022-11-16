@@ -29,7 +29,7 @@ class BundleSearch(val commonExchanges: Array<Exchange>) {
         // clear
         val newSetupToOffers = ConcurrentHashMap<Setup, MutableList<Offer>>()
         // fetch
-        val pool = PoolWithRetries(15)
+        val pool = PoolWithRetries(25)
         commonExchanges.asSequence().map(Exchange::getFetchTasks).flatten().map {{
             it().forEach { (setup, offers) ->
                 newSetupToOffers.getOrPut(setup) { mutableListOf() }

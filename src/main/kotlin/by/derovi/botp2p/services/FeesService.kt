@@ -2,8 +2,7 @@ package by.derovi.botp2p.services
 
 import by.derovi.botp2p.exchange.Exchange
 import by.derovi.botp2p.exchange.Token
-import by.derovi.botp2p.exchange.exchanges.Binance
-import by.derovi.botp2p.exchange.exchanges.Huobi
+import by.derovi.botp2p.exchange.exchanges.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import kotlin.math.max
@@ -18,7 +17,11 @@ fun fixedFee(amount: Double) = Fee(0.0, amount)
 
 val spotFees = mapOf(
     Huobi to Token.values().associateWith { percentFee(0.2) },
-    Binance to Token.values().associateWith { percentFee(0.1) }
+    Binance to Token.values().associateWith { percentFee(0.1) },
+    Bybit to Token.values().associateWith { percentFee(0.1) },
+    OKX to Token.values().associateWith { percentFee(0.15) },
+    Kucoin to Token.values().associateWith { percentFee(0.1) },
+    Bitzlato to Token.values().associateWith { percentFee(0.2) },
 )
 
 val withdrawFees = mapOf(

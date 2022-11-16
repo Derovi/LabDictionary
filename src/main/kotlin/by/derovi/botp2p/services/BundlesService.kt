@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.transaction.Transactional
 import kotlin.concurrent.thread
 
@@ -104,18 +105,22 @@ class BundlesService {
         }
     }
 
-    @Scheduled(initialDelay = 1000, fixedRate = 20 * 1000) // Repeat every 1 minutes
-    fun scheduleTaskUsingCronExpression() {
+    val lock = AtomicBoolean(false)
+
+    @Scheduled(initialDelay = 1000, fixedRate = 1000) // Repeat every 1 minutes
+    fun fetchData() {
+        if (lock.get()) return
         thread {
-            PaymentMethod.values().toList() // Список банков. Указаны все, можно указать конкретные вот так:
+            lock.set(true)
             var time = System.currentTimeMillis()
             println("=== Fetching data ===")
             bundleSearch.fetchData()
             println("Took ${(System.currentTimeMillis() - time) / 1000.0}")
+            lock.set(false)
         }
     }
 
-    @Scheduled(initialDelay = 1000, fixedRate = 5000) // Repeat every 3 minutes
+    @Scheduled(initialDelay = 1000, fixedRate = 1000) // Repeat every 3 minutes
     @Transactional
     fun aba() {
         var time = System.currentTimeMillis()

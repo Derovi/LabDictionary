@@ -11,5 +11,7 @@ enum class Token(val readableName: String) {
     EOS("EOS"),
     HUSD("HUSD"),
     XRP("XRP"),
-    LTC("LTC")
+    LTC("LTC");
+
+    fun isStable() =  this == USDT || this == USDC
 }
