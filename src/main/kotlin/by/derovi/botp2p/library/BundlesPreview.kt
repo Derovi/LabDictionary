@@ -12,9 +12,8 @@ object BundlesPreview {
         append(buy(bundle))
         append(way(bundle))
         append(sell(bundle))
-        append("\n")
         append(warning(bundle))
-        append("\n\n")
+        append("\n")
         append(offers(bundle, 5))
         append("\n")
         append(table(bundle))
@@ -27,11 +26,11 @@ object BundlesPreview {
         val hedgeBuy = !bundle.buyToken.isStable()
         val hedgeSell = !bundle.sellToken.isStable() && bundle.sellOffers.first().orderType == OrderType.BUY
         if (hedgeBuy || hedgeSell) {
-            append("<i>Не забывайте </i>$link ")
+            append("<i>  Рекомендуем </i>$link ")
             if (hedgeBuy) append("<i>покупку</i>")
             if (hedgeBuy && hedgeSell) append("<i> и </i>")
             if (hedgeSell) append("<i>продажу</i>")
-            append("<i>!</i>")
+            append("<i>!</i>\n")
         }
     }
 
