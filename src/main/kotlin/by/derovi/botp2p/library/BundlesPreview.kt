@@ -8,11 +8,11 @@ import by.derovi.botp2p.services.FeesService
 object BundlesPreview {
     fun fullView(bundle: BundleSearchResult) = with(StringBuilder()) {
         append(spreadAndFee(bundle))
+        append(warning(bundle))
         append("\n")
         append(buy(bundle))
         append(way(bundle))
         append(sell(bundle))
-        append(warning(bundle))
         append("\n")
         append(offers(bundle, 5))
         append("\n")
