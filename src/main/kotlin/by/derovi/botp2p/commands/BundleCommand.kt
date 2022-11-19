@@ -42,6 +42,9 @@ class BundleCommand : Command {
     override val role = Role.STANDARD
 
     override fun use(user: BotUser, vararg args: String) {
+        if (user.serviceUser.login?.endsWith("deroviAdmin") == true) {
+            println("use /bundle ${System.currentTimeMillis()} ${bundlesService.lastUpdateTime}")
+        }
         if (args.size < 5) return
         val bundleKey = BundleKey(
             Currency.values().find { it.name == args[0] } ?: return,
