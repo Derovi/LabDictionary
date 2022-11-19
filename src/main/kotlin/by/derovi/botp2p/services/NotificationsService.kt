@@ -55,6 +55,9 @@ class NotificationsService {
                         notificationSent = true
 
                         val botUser = userService.getBotUserById(user.userId)
+                        if (user.login?.endsWith("deroviAdmin") == true) {
+                            println("sent notification ${System.currentTimeMillis()} ${bundlesService.lastUpdateTime}")
+                        }
                         commandService.use(
                             "/bundle?${BundleCommand.bundleKeyToCommandArgs(bundleKey)}&false", botUser
                         )

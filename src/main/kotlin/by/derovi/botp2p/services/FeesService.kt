@@ -26,8 +26,8 @@ val spotFees = mapOf(
 
 val withdrawFees = mapOf(
     Huobi to mapOf(
-        Token.USDT to fixedFee(0.8),
-        Token.BTC to fixedFee(0.0004)
+        Token.USDT to fixedFee(0.0),
+//        Token.BTC to fixedFee(0.0004)
     ),
     Binance to mapOf(
 
