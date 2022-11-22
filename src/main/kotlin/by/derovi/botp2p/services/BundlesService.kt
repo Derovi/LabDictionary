@@ -114,9 +114,12 @@ class BundlesService {
             lock.set(true)
             var time = System.currentTimeMillis()
             println("=== Fetching data ===")
-            bundleSearch.fetchData()
+            try {
+                bundleSearch.fetchData()
+            } catch (_: Exception) {} finally {
+                lock.set(false)
+            }
             println("Took ${(System.currentTimeMillis() - time) / 1000.0}")
-            lock.set(false)
         }
     }
 
