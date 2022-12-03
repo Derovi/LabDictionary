@@ -51,7 +51,7 @@ class TariffsCommand : Command {
         }
     }
     override fun use(user: BotUser, vararg args: String) {
-        val tariffs = Role.values().filter(Role::isTariff)
+        val tariffs = Role.values().filter(Role::isShown)
         user.sendMessage(
             with(StringBuilder()) {
                 val prices = promoService.prices

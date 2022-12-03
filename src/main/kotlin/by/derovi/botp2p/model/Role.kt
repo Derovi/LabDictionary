@@ -29,6 +29,9 @@ enum class Role(val readableName: String, val description: String) {
     """.trimIndent()),
     ADMIN("Админ", "");
 
+    val isShown: Boolean
+        get() = this == DEFAULT
+
     val isTariff: Boolean
         get() = this != UNSUBSCRIBED && this != ADMIN
 
