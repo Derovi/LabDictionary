@@ -44,6 +44,13 @@ class PromoService {
             SubscriptionDuration.SEASON to 459,
             SubscriptionDuration.HALF_YEAR to 799,
             SubscriptionDuration.YEAR to 1279
+        ),
+        Role.DEFAULT to mapOf(
+            SubscriptionDuration.WEEK to 39,
+            SubscriptionDuration.MONTH to 99,
+            SubscriptionDuration.SEASON to 259,
+            SubscriptionDuration.HALF_YEAR to 439,
+            SubscriptionDuration.YEAR to 719
         )
     )
 
