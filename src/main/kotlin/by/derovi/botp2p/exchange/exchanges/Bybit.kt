@@ -2,6 +2,7 @@ package by.derovi.botp2p.exchange.exchanges
 
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.exchange.NetworkUtils
+import by.derovi.botp2p.library.Utils
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
@@ -51,7 +52,7 @@ object Bybit : Exchange {
                     orderType,
                     available,
                     entry["minAmount"].asDouble(),
-                    min(entry["maxAmount"].asDouble(), price * available),
+                    min(entry["maxAmount"].asDouble(), Utils.normalizeSpread(price * available)),
                     entry["nickName"].asText(),
                     entry["recentExecuteRate"].asInt(),
                     entry["recentOrderNum"].asInt(),

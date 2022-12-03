@@ -2,8 +2,10 @@ package by.derovi.botp2p.exchange.exchanges
 
 import by.derovi.botp2p.exchange.*
 import by.derovi.botp2p.exchange.NetworkUtils
+import by.derovi.botp2p.library.Utils
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
+import kotlin.math.min
 
 object Binance : Exchange {
     override fun getFetchTasks(): List<() -> Map<Setup, List<Offer>>> {
@@ -50,7 +52,7 @@ object Binance : Exchange {
                     orderType,
                     available,
                     entry["adv"]["minSingleTransAmount"].asDouble(),
-                    price * available,
+                    min(entry["adv"]["maxSingleTransAmount"].asDouble(), Utils.normalizeSpread(price * available)),
                     entry["advertiser"]["nickName"].asText(),
                     (entry["advertiser"]["monthFinishRate"].asDouble() * 100).toInt(),
                     entry["advertiser"]["monthOrderCount"].asInt(),
