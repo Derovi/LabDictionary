@@ -52,7 +52,7 @@ object Binance : Exchange {
                     orderType,
                     available,
                     entry["adv"]["minSingleTransAmount"].asDouble(),
-                    min(entry["adv"]["maxSingleTransAmount"].asDouble(), Utils.normalizeSpread(price * available)),
+                    min(entry["adv"]["dynamicMaxSingleTransAmount"].asDouble(), Utils.normalizeSpread(price * available)),
                     entry["advertiser"]["nickName"].asText(),
                     (entry["advertiser"]["monthFinishRate"].asDouble() * 100).toInt(),
                     entry["advertiser"]["monthOrderCount"].asInt(),
