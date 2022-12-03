@@ -79,7 +79,7 @@ class NotificationsDialog : Dialog {
             commandService.back(user)
             return false
         }
-        if (percent < 0.5) {
+        if (percent < 0.2) {
             user.sendMessage("\uD83D\uDD14 Спред должен быть не меньше <b>0.5%</b>")
             commandService.back(user)
             return false

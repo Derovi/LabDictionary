@@ -42,13 +42,15 @@ object Binance : Exchange {
             entry["adv"]["tradeMethods"]
                 .mapNotNull { codeToPaymentMethod[it["identifier"].asText()] }
                 .map { paymentMethod ->
+                val price = entry["adv"]["price"].asDouble()
+                val available = entry["adv"]["surplusAmount"].asDouble()
                 Offer(
-                    entry["adv"]["price"].asDouble(),
+                    price,
                     token,
                     orderType,
-                    entry["adv"]["surplusAmount"].asDouble(),
+                    available,
                     entry["adv"]["minSingleTransAmount"].asDouble(),
-                    entry["adv"]["maxSingleTransAmount"].asDouble(),
+                    price * available,
                     entry["advertiser"]["nickName"].asText(),
                     (entry["advertiser"]["monthFinishRate"].asDouble() * 100).toInt(),
                     entry["advertiser"]["monthOrderCount"].asInt(),

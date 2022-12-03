@@ -5,6 +5,7 @@ import by.derovi.botp2p.exchange.NetworkUtils
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.entity.ContentType
+import kotlin.math.min
 
 object Bybit : Exchange {
 
@@ -42,13 +43,15 @@ object Bybit : Exchange {
     fun parseResponse(token: Token, currency: Currency, orderType: OrderType, data: String): List<Offer> =
         ObjectMapper().readTree(data)["result"]["items"].map { entry ->
             entry["payments"].mapNotNull { codeToPaymentMethod[it.asInt()] }.map { paymentMethod ->
+                val price = entry["price"].asDouble()
+                val available = entry["lastQuantity"].asDouble()
                 Offer(
-                    entry["price"].asDouble(),
+                    price,
                     token,
                     orderType,
-                    entry["lastQuantity"].asDouble(),
+                    available,
                     entry["minAmount"].asDouble(),
-                    entry["maxAmount"].asDouble(),
+                    min(entry["maxAmount"].asDouble(), price * available),
                     entry["nickName"].asText(),
                     entry["recentExecuteRate"].asInt(),
                     entry["recentOrderNum"].asInt(),
