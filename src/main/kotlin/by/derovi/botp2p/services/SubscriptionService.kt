@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.transaction.Transactional
 
 @Service
 class SubscriptionService {
@@ -43,6 +44,7 @@ class SubscriptionService {
     }
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
+    @Transactional
     fun updateAllSubscriptions() {
         userRepository.findAll().map { userService.getBotUserById(it.userId) }.forEach(::update)
     }
